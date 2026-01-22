@@ -196,8 +196,10 @@ async function loadList() {
       <td>$ ${moneyCOP(r.deudaMoroso || 0)}</td>
       <td>
         <div class="actionsCell">
-          <button class="iconBtn" data-edit="${r.id}">Editar</button>
-          <button class="iconBtn danger" data-del="${r.id}">Eliminar</button>
+          ${state.isAdmin ? `
+            <button class="iconBtn" data-edit="${r.id}">Editar</button>
+            <button class="iconBtn danger" data-del="${r.id}">Eliminar</button>
+          ` : ''}
         </div>
       </td>
     </tr>
