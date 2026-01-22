@@ -32,11 +32,15 @@ app.use(express.static(path.join(__dirname, "public")));
 
 initDb();
 
-// Crear usuario admin por defecto si no existe
-async function createDefaultAdmin() {
+// Crear usuarios por defecto si no existen
+async function createDefaultUsers() {
   try {
+    // Dar tiempo para que SQLite esté listo
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Verificar y crear usuario admin
     const admin = await new Promise((resolve, reject) => {
-      db.get("SELECT * FROM usuarios WHERE rol = 'admin'", (err, row) => {
+      db.get("SELECT * FROM usuarios WHERE usuario = 'admin'", (err, row) => {
         if (err) reject(err);
         else resolve(row);
       });
@@ -45,10 +49,28 @@ async function createDefaultAdmin() {
     if (!admin) {
       await createUser("admin", "admin123", "admin");
       console.log("✅ Usuario admin creado: usuario: admin, contraseña: admin123");
-      console.log("⚠️  IMPORTANTE: Cambia la contraseña en producción");
+    } else {
+      console.log("ℹ️  Usuario admin ya existe");
     }
+    
+    // Verificar y crear usuario vigilante
+    const vigilante = await new Promise((resolve, reject) => {
+      db.get("SELECT * FROM usuarios WHERE usuario = 'vigilante'", (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+    
+    if (!vigilante) {
+      await createUser("vigilante", "vigilante123", "vigilante");
+      console.log("✅ Usuario vigilante creado: usuario: vigilante, contraseña: vigilante123");
+    } else {
+      console.log("ℹ️  Usuario vigilante ya existe");
+    }
+    
+    console.log("⚠️  IMPORTANTE: Cambia estas contraseñas en producción");
   } catch (err) {
-    console.error("Error creando admin:", err);
+    console.error("❌ Error creando usuarios por defecto:", err);
   }
 }
 
@@ -589,7 +611,7 @@ app.get("/api/export/historial.csv", (req, res) => {
 });
 
 app.listen(PORT, async () => {
-  await createDefaultAdmin();
+  await createDefaultUsers();
   console.log(`🚀 Servidor listo en http://localhost:${PORT}`);
   console.log(`📧 Login: http://localhost:${PORT}/login.html`);
 });
