@@ -167,6 +167,66 @@
     </div>
   </footer>
 
+  <!-- Modal para cambiar contraseña -->
+  <div id="modalCambiarCredenciales" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🔐 Cambiar Credenciales</h2>
+        <button type="button" class="modal-close" id="btnCerrarModal">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="password">🔑 Contraseña</button>
+          <button class="tab-btn" data-tab="username">👤 Usuario</button>
+        </div>
+
+        <!-- Pestaña de contraseña -->
+        <div id="tab-password" class="tab-content active">
+          <form id="formCambiarPassword">
+            <div class="form-group">
+              <label for="contrasenaActual">Contraseña Actual</label>
+              <input id="contrasenaActual" type="password" placeholder="Ingresa tu contraseña actual" required />
+            </div>
+
+            <div class="form-group">
+              <label for="contrasenaNueva">Contraseña Nueva</label>
+              <input id="contrasenaNueva" type="password" placeholder="Mínimo 6 caracteres" required />
+            </div>
+
+            <div class="form-group">
+              <label for="confirmacion">Confirmar Contraseña</label>
+              <input id="confirmacion" type="password" placeholder="Confirma tu nueva contraseña" required />
+            </div>
+
+            <div id="msgPassword" class="msg"></div>
+
+            <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">Cambiar Contraseña</button>
+          </form>
+        </div>
+
+        <!-- Pestaña de usuario -->
+        <div id="tab-username" class="tab-content" style="display: none;">
+          <form id="formCambiarUsername">
+            <div class="form-group">
+              <label for="usuarioActual">Usuario Actual</label>
+              <input id="usuarioActual" type="text" disabled />
+            </div>
+
+            <div class="form-group">
+              <label for="usuarioNuevo">Usuario Nuevo</label>
+              <input id="usuarioNuevo" type="text" placeholder="Mínimo 3 caracteres" required />
+            </div>
+
+            <div id="msgUsername" class="msg"></div>
+
+            <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">Cambiar Usuario</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>

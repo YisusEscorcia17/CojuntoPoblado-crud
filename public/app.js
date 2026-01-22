@@ -47,11 +47,15 @@ function updateUIByRole() {
           <span style="color: var(--muted);">${state.usuario}</span>
           <span style="background: ${roleBadgeColor}; color: var(--bg); padding: 4px 10px; border-radius: 16px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">${roleName}</span>
         </div>
-        <button id="btnLogout" class="btn ghost" style="padding: 8px 12px; font-size: 12px; white-space: nowrap;">🚪 Salir</button>
+        <div style="display: flex; gap: 8px;">
+          <button id="btnCambiarCredenciales" class="btn ghost" style="padding: 8px 12px; font-size: 12px; white-space: nowrap;">⚙️ Credenciales</button>
+          <button id="btnLogout" class="btn ghost" style="padding: 8px 12px; font-size: 12px; white-space: nowrap;">🚪 Salir</button>
+        </div>
       </div>
     `;
     
     document.getElementById("btnLogout").addEventListener("click", logout);
+    document.getElementById("btnCambiarCredenciales").addEventListener("click", abrirModalCambiarCredenciales);
   }
 }
 
@@ -293,6 +297,138 @@ if (btnBackup) {
     }
   });
 }
+
+/* ============ CAMBIAR CREDENCIALES ============ */
+
+function abrirModalCambiarCredenciales() {
+  const modal = $("modalCambiarCredenciales");
+  modal.style.display = "flex";
+  
+  // Mostrar usuario actual
+  const usuarioActualInput = $("usuarioActual");
+  if (usuarioActualInput) {
+    usuarioActualInput.value = state.usuario;
+  }
+  
+  // Limpiar formularios
+  $("formCambiarPassword").reset();
+  $("formCambiarUsername").reset();
+  
+  // Limpiar mensajes
+  document.getElementById("msgPassword").textContent = "";
+  document.getElementById("msgPassword").className = "msg";
+  document.getElementById("msgUsername").textContent = "";
+  document.getElementById("msgUsername").className = "msg";
+}
+
+function cerrarModalCambiarCredenciales() {
+  const modal = $("modalCambiarCredenciales");
+  modal.style.display = "none";
+}
+
+// Cerrar modal
+$("btnCerrarModal").addEventListener("click", cerrarModalCambiarCredenciales);
+
+// Cerrar modal al hacer click afuera
+$("modalCambiarCredenciales").addEventListener("click", (e) => {
+  if (e.target.id === "modalCambiarCredenciales") {
+    cerrarModalCambiarCredenciales();
+  }
+});
+
+// Tabs
+document.querySelectorAll(".tab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const tab = btn.dataset.tab;
+    
+    // Cambiar tab activo
+    document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    
+    // Cambiar contenido
+    document.querySelectorAll(".tab-content").forEach((el) => el.classList.remove("active"));
+    $(`tab-${tab}`).classList.add("active");
+  });
+});
+
+// Cambiar contraseña
+$("formCambiarPassword").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  
+  const contrasenaActual = $("contrasenaActual").value;
+  const contrasenaNueva = $("contrasenaNueva").value;
+  const confirmacion = $("confirmacion").value;
+  
+  const msgEl = document.getElementById("msgPassword");
+  msgEl.textContent = "Cambiando contraseña...";
+  msgEl.className = "msg";
+  
+  try {
+    const res = await fetch("/api/auth/change-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contrasenaActual, contrasenaNueva, confirmacion })
+    });
+    
+    const data = await res.json();
+    
+    if (!res.ok) {
+      msgEl.textContent = data.error || "Error al cambiar contraseña";
+      msgEl.className = "msg err";
+      return;
+    }
+    
+    msgEl.textContent = "✅ Contraseña cambiada exitosamente";
+    msgEl.className = "msg ok";
+    
+    setTimeout(() => {
+      $("formCambiarPassword").reset();
+      cerrarModalCambiarCredenciales();
+    }, 1500);
+  } catch (err) {
+    msgEl.textContent = "Error de conexión";
+    msgEl.className = "msg err";
+  }
+});
+
+// Cambiar usuario
+$("formCambiarUsername").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  
+  const usuarioNuevo = $("usuarioNuevo").value.trim();
+  const msgEl = document.getElementById("msgUsername");
+  msgEl.textContent = "Cambiando usuario...";
+  msgEl.className = "msg";
+  
+  try {
+    const res = await fetch("/api/auth/change-username", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ usuarioNuevo })
+    });
+    
+    const data = await res.json();
+    
+    if (!res.ok) {
+      msgEl.textContent = data.error || "Error al cambiar usuario";
+      msgEl.className = "msg err";
+      return;
+    }
+    
+    msgEl.textContent = "✅ Usuario cambiado exitosamente. Redirigiendo...";
+    msgEl.className = "msg ok";
+    
+    state.usuario = usuarioNuevo;
+    
+    setTimeout(() => {
+      cerrarModalCambiarCredenciales();
+      updateUIByRole();
+    }, 1500);
+  } catch (err) {
+    msgEl.textContent = "Error de conexión";
+    msgEl.className = "msg err";
+  }
+});
 
 // Inicializar: verificar auth y cargar datos
 checkAuth();

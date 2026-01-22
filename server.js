@@ -5,7 +5,7 @@ import { promises as fsp } from "fs";
 import { fileURLToPath } from "url";
 import session from "express-session";
 import { db, initDb } from "./db.js";
-import { requireAuth, requireAdmin, verifyLogin, createUser } from "./auth.js";
+import { requireAuth, requireAdmin, verifyLogin, createUser, changePassword, changeUsername, getUserById } from "./auth.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -191,6 +191,84 @@ app.post("/api/auth/logout", (req, res) => {
   req.session.destroy(() => {
     res.json({ ok: true });
   });
+});
+
+// Cambiar contraseña
+app.post("/api/auth/change-password", requireAuth, async (req, res) => {
+  const { contrasenaActual, contrasenaNueva, confirmacion } = req.body;
+  
+  if (!contrasenaActual || !contrasenaNueva || !confirmacion) {
+    return res.status(400).json({ error: "Todos los campos son requeridos" });
+  }
+  
+  if (contrasenaNueva.length < 6) {
+    return res.status(400).json({ error: "La contraseña debe tener al menos 6 caracteres" });
+  }
+  
+  if (contrasenaNueva !== confirmacion) {
+    return res.status(400).json({ error: "Las contraseñas no coinciden" });
+  }
+  
+  try {
+    const user = await getUserById(req.session.usuario.id);
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+    
+    // Verificar contraseña actual
+    const { verifyPassword } = await import("./auth.js");
+    const isValid = await verifyPassword(contrasenaActual, (await new Promise((resolve, reject) => {
+      db.get("SELECT contrasena FROM usuarios WHERE id = ?", [req.session.usuario.id], (err, row) => {
+        if (err) reject(err);
+        else resolve(row?.contrasena);
+      });
+    })));
+    
+    if (!isValid) {
+      return res.status(401).json({ error: "Contraseña actual incorrecta" });
+    }
+    
+    await changePassword(req.session.usuario.id, contrasenaNueva);
+    res.json({ ok: true, message: "Contraseña cambiada exitosamente" });
+  } catch (err) {
+    res.status(500).json({ error: "Error al cambiar contraseña" });
+  }
+});
+
+// Cambiar usuario
+app.post("/api/auth/change-username", requireAuth, async (req, res) => {
+  const { usuarioNuevo } = req.body;
+  
+  if (!usuarioNuevo) {
+    return res.status(400).json({ error: "El nuevo usuario es requerido" });
+  }
+  
+  if (usuarioNuevo.length < 3) {
+    return res.status(400).json({ error: "El usuario debe tener al menos 3 caracteres" });
+  }
+  
+  try {
+    // Verificar que el nuevo usuario no exista
+    const existing = await new Promise((resolve, reject) => {
+      db.get("SELECT id FROM usuarios WHERE usuario = ? AND id != ?", [usuarioNuevo, req.session.usuario.id], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+    
+    if (existing) {
+      return res.status(400).json({ error: "Este usuario ya está en uso" });
+    }
+    
+    await changeUsername(req.session.usuario.id, usuarioNuevo);
+    
+    // Actualizar la sesión
+    req.session.usuario.usuario = usuarioNuevo;
+    
+    res.json({ ok: true, message: "Usuario cambiado exitosamente", nuevoUsuario: usuarioNuevo });
+  } catch (err) {
+    res.status(500).json({ error: "Error al cambiar usuario" });
+  }
 });
 
 /* ================= CRUD ================= */
