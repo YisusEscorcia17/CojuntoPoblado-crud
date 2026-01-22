@@ -4,9 +4,7 @@
 
 **⚠️ CRÍTICO:** Después de desplegar en Render, DEBE cambiar las credenciales iniciales INMEDIATAMENTE.
 
-Las credenciales por defecto son:
-- **Admin**: usuario: `admin` | contraseña: `admin123`
-- **Vigilante**: usuario: `vigilante` | contraseña: `vigilante123`
+Las credenciales iniciales serán proporcionadas por el administrador del sistema. **NO están publicadas aquí por razones de seguridad.**
 
 ---
 
@@ -17,7 +15,7 @@ Las credenciales por defecto son:
 **La forma más fácil:**
 
 1. Accede a: https://cojuntoelpobladosm.onrender.com/login.html
-2. Inicia sesión con usuario: `admin` | contraseña: `admin123`
+2. Inicia sesión con las credenciales proporcionadas por el administrador
 3. Haz clic en **"⚙️ Credenciales"** (arriba a la derecha)
 4. En la pestaña **"🔑 Contraseña"** cambias la contraseña
 5. En la pestaña **"👤 Usuario"** cambias el nombre de usuario
@@ -27,6 +25,7 @@ Las credenciales por defecto son:
 - No necesita terminal
 - Interfaz visual
 - Rápido
+- Seguro
 
 ---
 
@@ -41,9 +40,9 @@ npm run agregar-usuario
 
 Responde las preguntas:
 ```
-👤 Nombre de usuario: vigilante-juan
-🔐 Contraseña (mínimo 6 caracteres): Juan@2026!Segura
-🔐 Confirmar contraseña: Juan@2026!Segura
+👤 Nombre de usuario: ej-vigilante-juan
+🔐 Contraseña (mínimo 6 caracteres): [ingresa contraseña fuerte]
+🔐 Confirmar contraseña: [confirma contraseña]
 👥 Rol (admin/vigilante): vigilante
 ```
 
@@ -65,11 +64,11 @@ Espera 2-3 minutos para que Render redepliegue. Listo ✅
 npm run listar-usuarios
 ```
 
-Salida:
+Salida (ejemplo):
 ```
-ID: 1 | Usuario: admin | Rol: Admin
-ID: 2 | Usuario: vigilante | Rol: Vigilante
-ID: 3 | Usuario: juan | Rol: Vigilante
+ID: 1 | Usuario: admin-conjunto | Rol: Admin
+ID: 2 | Usuario: vigilante-juan | Rol: Vigilante
+ID: 3 | Usuario: vigilante-maria | Rol: Vigilante
 ```
 
 ### Crear nuevo usuario
@@ -81,21 +80,21 @@ npm run agregar-usuario
 
 ## 🔒 Estructura de Usuarios Recomendada para Producción
 
-Crea una estructura como esta:
+Crea una estructura como esta (USAR CONTRASEÑAS FUERTES):
 
 ### **1. Admin Principal** (Acceso Total)
-- Usuario: `admin-conjunto`
-- Contraseña: `ContraseñaFuerte!2026`
+- Nombre sugerido: `admin-conjunto`
+- Contraseña: **[Usar contraseña fuerte personal]**
 - Rol: `admin`
 
 ### **2. Vigilante - Turno A** (Solo Lectura)
-- Usuario: `vigilante-juan`
-- Contraseña: `Vigilante@2026Segura`
+- Nombre sugerido: `vigilante-turno-a`
+- Contraseña: **[Usar contraseña fuerte personal]**
 - Rol: `vigilante`
 
 ### **3. Vigilante - Turno B** (Solo Lectura)
-- Usuario: `vigilante-maria`
-- Contraseña: `Vigilante@2026Segura`
+- Nombre sugerido: `vigilante-turno-b`
+- Contraseña: **[Usar contraseña fuerte personal]**
 - Rol: `vigilante`
 
 ---
@@ -162,11 +161,9 @@ https://cojuntoelpobladosm.onrender.com/login.html
 Para confirmar que todo funciona:
 
 1. **Accede a la app:** https://cojuntoelpobladosm.onrender.com/login.html
-2. **Intenta login con las credenciales:**
-   - Usuario: `admin`
-   - Contraseña: `admin123`
+2. **Intenta login** con las credenciales proporcionadas por el administrador
 3. **Deberías ver el dashboard con propietarios**
-4. **Luego cambia la contraseña inmediatamente**
+4. **Cambia la contraseña INMEDIATAMENTE** desde "⚙️ Credenciales"
 
 ---
 
