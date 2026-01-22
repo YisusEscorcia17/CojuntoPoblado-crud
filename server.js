@@ -4,6 +4,7 @@ import fs from "fs";
 import { promises as fsp } from "fs";
 import { fileURLToPath } from "url";
 import session from "express-session";
+import SqliteStore from "connect-sqlite3";
 import { db, initDb } from "./db.js";
 import { requireAuth, requireAdmin, verifyLogin, createUser, changePassword, changeUsername, getUserById } from "./auth.js";
 
@@ -14,8 +15,15 @@ const NODE_ENV = process.env.NODE_ENV || "development";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configuración de sesiones
+const Store = SqliteStore(session);
+
+// Configuración de sesiones con SQLite store
 app.use(session({
+  store: new Store({
+    db: "database.sqlite",
+    table: "sessions",
+    dir: __dirname
+  }),
   secret: process.env.SESSION_SECRET || "conjunto-poblado-2026-secret-cambiar-en-produccion",
   resave: false,
   saveUninitialized: false,
