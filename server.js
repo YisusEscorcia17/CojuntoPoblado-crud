@@ -40,37 +40,49 @@ app.use(express.static(path.join(__dirname, "public")));
 
 initDb();
 
-// Crear usuarios por defecto si no existen (silenciosamente)
+// Crear usuarios por defecto si no existen
 async function createDefaultUsers() {
   try {
     // Dar tiempo para que SQLite esté listo
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1500));
     
-    // Verificar y crear usuario admin
-    const admin = await new Promise((resolve, reject) => {
-      db.get("SELECT * FROM usuarios WHERE usuario = 'admin'", (err, row) => {
+    // Contar usuarios en la BD
+    const count = await new Promise((resolve, reject) => {
+      db.get("SELECT COUNT(*) as total FROM usuarios", (err, row) => {
         if (err) reject(err);
-        else resolve(row);
+        else resolve(row?.total || 0);
       });
     });
     
-    if (!admin) {
-      await createUser("admin", "Admin@2026!Secure", "admin");
+    // Si hay usuarios, no hacer nada
+    if (count >= 2) {
+      console.log(`✅ Usuarios existentes en BD: ${count}`);
+      return;
     }
     
-    // Verificar y crear usuario vigilante
-    const vigilante = await new Promise((resolve, reject) => {
-      db.get("SELECT * FROM usuarios WHERE usuario = 'vigilante'", (err, row) => {
-        if (err) reject(err);
-        else resolve(row);
+    console.log("🔧 Inicializando usuarios por defecto...");
+    
+    // Limpiar tabla si está en estado inconsistente
+    if (count > 0 && count < 2) {
+      await new Promise((resolve, reject) => {
+        db.run("DELETE FROM usuarios", (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
       });
-    });
-    
-    if (!vigilante) {
-      await createUser("vigilante", "Vigilante@2026!Secure", "vigilante");
     }
+    
+    // Crear usuario admin
+    await createUser("admin", "Admin@2026!Secure", "admin");
+    console.log("✅ Usuario admin creado");
+    
+    // Crear usuario vigilante
+    await createUser("vigilante", "Vigilante@2026!Secure", "vigilante");
+    console.log("✅ Usuario vigilante creado");
+    
+    console.log("✅ Usuarios iniciales listos");
   } catch (err) {
-    // Silenciosamente fallar si ya existen
+    console.error("⚠️  Error inicializando usuarios:", err.message);
   }
 }
 
@@ -265,6 +277,33 @@ app.post("/api/auth/logout", (req, res) => {
   req.session.destroy(() => {
     res.json({ ok: true });
   });
+});
+
+// Reinicio de BD (endpoint secreto para emergencias)
+app.post("/api/admin/reset-db", async (req, res) => {
+  const { token } = req.body;
+  
+  // Token simple de emergencia
+  if (token !== "RESET2026POBLADO") {
+    return res.status(401).json({ ok: false, error: "No autorizado" });
+  }
+  
+  try {
+    // Limpiar tabla usuarios
+    await new Promise((resolve, reject) => {
+      db.run("DELETE FROM usuarios", (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+    
+    // Crear usuarios por defecto
+    await createDefaultUsers();
+    
+    res.json({ ok: true, mensaje: "BD reiniciada" });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 // Cambiar contraseña
