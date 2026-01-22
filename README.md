@@ -85,6 +85,34 @@ node eliminar-usuario.js
 node setup.js
 ```
 
+### Opción 3: DB Browser SQLite + Script Helper
+
+Si prefieres usar **DB Browser SQLite**, necesitas generar el hash de la contraseña primero:
+
+```bash
+# Generar hash para insertar manualmente
+node generar-hash.js
+```
+
+Este script:
+1. Te pide que escribas la contraseña
+2. Genera el hash bcryptjs automáticamente
+3. Te muestra el hash para copiar
+4. Te da instrucciones paso a paso para insertarlo en DB Browser SQLite
+
+**Pasos en DB Browser SQLite:**
+1. Abre `database.sqlite`
+2. Ve a pestaña "Browse Data"
+3. Selecciona tabla `usuarios`
+4. Haz clic en "New Record" (+)
+5. Llena los campos:
+   - `usuario`: Tu nombre de usuario
+   - `contrasena`: Pega el hash generado
+   - `rol`: `admin` o `vigilante`
+   - `activo`: `1`
+   - `createdAt`: `CURRENT_TIMESTAMP`
+6. Haz clic en "Write Changes"
+
 ## 🔑 Credenciales por Defecto
 
 ⚠️ **IMPORTANTE**: Cambiar estas contraseñas en producción
