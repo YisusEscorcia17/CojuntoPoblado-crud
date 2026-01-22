@@ -56,7 +56,7 @@ async function createDefaultUsers() {
     
     if (!admin) {
       await createUser("admin", "admin123", "admin");
-      console.log("✅ Usuario admin creado: usuario: admin, contraseña: admin123");
+      console.log("✅ Usuario admin creado");
     } else {
       console.log("ℹ️  Usuario admin ya existe");
     }
@@ -71,12 +71,12 @@ async function createDefaultUsers() {
     
     if (!vigilante) {
       await createUser("vigilante", "vigilante123", "vigilante");
-      console.log("✅ Usuario vigilante creado: usuario: vigilante, contraseña: vigilante123");
+      console.log("✅ Usuario vigilante creado");
     } else {
       console.log("ℹ️  Usuario vigilante ya existe");
     }
     
-    console.log("⚠️  IMPORTANTE: Cambia estas contraseñas en producción");
+    console.log("⚠️  Usuarios iniciales listos");
   } catch (err) {
     console.error("❌ Error creando usuarios por defecto:", err);
   }
