@@ -6,7 +6,7 @@ import { fileURLToPath } from "url";
 import session from "express-session";
 import SqliteStore from "connect-sqlite3";
 import { db, initDb } from "./db.js";
-import { requireAuth, requireAdmin, verifyLogin, createUser, changePassword, changeUsername, getUserById, hashPassword } from "./auth.js";
+import { requireAuth, requireAdmin, verifyLogin, createUser, changePassword, changeUsername, getUserById, hashPassword, verifyPassword } from "./auth.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -302,6 +302,53 @@ app.get("/api/debug/status", (req, res) => {
       enviroment: NODE_ENV
     });
   });
+});
+
+// Debug: Testear login
+app.post("/api/debug/test-login", async (req, res) => {
+  const { usuario, contrasena } = req.body;
+  
+  console.log("🔍 DEBUG: Test login para:", usuario);
+  
+  try {
+    // Obtener usuario de BD
+    const user = await new Promise((resolve, reject) => {
+      db.get("SELECT * FROM usuarios WHERE usuario = ?", [usuario], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+    
+    if (!user) {
+      return res.json({ ok: false, error: "Usuario no encontrado", usuario });
+    }
+    
+    console.log("✅ Usuario encontrado en BD:", user.usuario, "Rol:", user.rol);
+    
+    // Verificar contraseña
+    const isValid = await verifyPassword(contrasena, user.contrasena);
+    
+    console.log("🔑 Contraseña válida?", isValid);
+    
+    if (!isValid) {
+      return res.json({ 
+        ok: false, 
+        error: "Contraseña incorrecta",
+        usuario,
+        hashEnBD: user.contrasena ? user.contrasena.substring(0, 20) + "..." : "VACÍO"
+      });
+    }
+    
+    res.json({ 
+      ok: true, 
+      mensaje: "Login exitoso",
+      usuario: user.usuario,
+      rol: user.rol
+    });
+  } catch (err) {
+    console.error("❌ Error en test-login:", err);
+    res.json({ ok: false, error: err.message });
+  }
 });
 
 // Cambiar contraseña
