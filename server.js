@@ -200,6 +200,56 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
+// Cambiar contraseña inicial (sin estar logueado - SOLO PARA ADMIN CON CONTRASEÑA INICIAL)
+app.post("/api/auth/setup-password", async (req, res) => {
+  const { usuario, contrasenaActual, contrasenaNueva, confirmacion } = req.body;
+  
+  if (!usuario || !contrasenaActual || !contrasenaNueva || !confirmacion) {
+    return res.status(400).json({ error: "Todos los campos son requeridos" });
+  }
+  
+  if (contrasenaNueva !== confirmacion) {
+    return res.status(400).json({ error: "Las contraseñas no coinciden" });
+  }
+  
+  if (contrasenaNueva.length < 6) {
+    return res.status(400).json({ error: "La contraseña debe tener al menos 6 caracteres" });
+  }
+  
+  try {
+    // Verificar que el usuario y contraseña sean correctos
+    const user = await verifyLogin(usuario, contrasenaActual);
+    if (!user) {
+      return res.status(401).json({ error: "Usuario o contraseña incorrectos" });
+    }
+    
+    // Verificar que sea admin (por seguridad)
+    if (user.rol !== "admin") {
+      return res.status(403).json({ error: "Solo el admin puede cambiar contraseña inicial" });
+    }
+    
+    // Generar hash de la nueva contraseña
+    const contrasenaBcrypt = require("bcryptjs");
+    const newHash = await contrasenaBcrypt.hash(contrasenaNueva, 10);
+    
+    // Actualizar contraseña en BD
+    await new Promise((resolve, reject) => {
+      db.run(
+        "UPDATE usuarios SET contrasena = ? WHERE usuario = ?",
+        [newHash, usuario],
+        function(err) {
+          if (err) reject(err);
+          else resolve();
+        }
+      );
+    });
+    
+    res.json({ ok: true, mensaje: "Contraseña cambiada exitosamente" });
+  } catch (err) {
+    res.status(500).json({ error: "Error al cambiar contraseña" });
+  }
+});
+
 // Obtener usuario actual
 app.get("/api/auth/me", (req, res) => {
   if (!req.session?.usuario) {
