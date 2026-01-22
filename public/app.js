@@ -1,0 +1,299 @@
+const $ = (id) => document.getElementById(id);
+
+// Estado global
+const state = {
+  editingId: null,
+  usuario: null,
+  isAdmin: false,
+};
+
+// Verificar autenticación
+async function checkAuth() {
+  try {
+    const res = await fetch("/api/auth/me");
+    if (!res.ok) {
+      window.location.href = "/login.html";
+      return;
+    }
+    
+    const user = await res.json();
+    state.usuario = user.usuario;
+    state.isAdmin = user.rol === "admin";
+    
+    // Actualizar UI según rol
+    updateUIByRole();
+  } catch (err) {
+    window.location.href = "/login.html";
+  }
+}
+
+// Actualizar UI según rol
+function updateUIByRole() {
+  const adminElements = document.querySelectorAll("[data-admin-only]");
+  const headerInfo = document.querySelector(".header-info");
+  
+  adminElements.forEach((el) => {
+    el.style.display = state.isAdmin ? "" : "none";
+  });
+  
+  if (headerInfo) {
+    const roleIcon = state.isAdmin ? "👨‍💼" : "👁️";
+    const roleName = state.isAdmin ? "Administrador" : "Vigilante";
+    const roleBadgeColor = state.isAdmin ? "var(--accent)" : "var(--ok)";
+    
+    headerInfo.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+          <span style="color: var(--muted);">${state.usuario}</span>
+          <span style="background: ${roleBadgeColor}; color: var(--bg); padding: 4px 10px; border-radius: 16px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">${roleName}</span>
+        </div>
+        <button id="btnLogout" class="btn ghost" style="padding: 8px 12px; font-size: 12px; white-space: nowrap;">🚪 Salir</button>
+      </div>
+    `;
+    
+    document.getElementById("btnLogout").addEventListener("click", logout);
+  }
+}
+
+// Logout
+async function logout() {
+  await fetch("/api/auth/logout", { method: "POST" });
+  window.location.href = "/login.html";
+}
+
+const form = $("form");
+const msg = $("msg");
+const tbody = $("tbody");
+
+function setMsg(text, type = "") {
+  msg.textContent = text || "";
+  msg.className = "msg " + (type || "");
+}
+
+function moneyCOP(value) {
+  const n = Number(value || 0);
+  return n.toLocaleString("es-CO");
+}
+
+function toggleDeuda() {
+  const morosoEl = $("moroso");
+  const deudaInput = $("deudaMoroso");
+  if (!morosoEl || !deudaInput) return;
+
+  const isMoroso = morosoEl.checked;
+  deudaInput.disabled = !isMoroso;
+
+  if (!isMoroso) {
+    deudaInput.value = 0;
+  } else {
+    if (deudaInput.value === "" || deudaInput.value == null) deudaInput.value = 0;
+  }
+}
+
+function readForm() {
+  const placaCarro = $("placaCarro").value.trim().toUpperCase();
+  const placaMoto = $("placaMoto").value.trim().toUpperCase();
+
+  return {
+    nombrePropietario: $("nombrePropietario").value.trim(),
+    correo: $("correo").value.trim(),
+    cedula: $("cedula").value.trim(),
+    torre: $("torre").value.trim(),
+    apartamento: $("apartamento").value.trim(),
+    cantidadCarros: Number.parseInt($("cantidadCarros").value || "0", 10),
+    cantidadMotos: Number.parseInt($("cantidadMotos").value || "0", 10),
+    placaCarro: placaCarro || null,
+    placaMoto: placaMoto || null,
+    moroso: $("moroso").checked,
+    deudaMoroso: Number.parseInt($("deudaMoroso").value || "0", 10)
+  };
+}
+
+function fillForm(row) {
+  $("id").value = row.id;
+  $("nombrePropietario").value = row.nombrePropietario ?? "";
+  $("correo").value = row.correo ?? "";
+  $("cedula").value = row.cedula ?? "";
+  $("torre").value = row.torre ?? "";
+  $("apartamento").value = row.apartamento ?? "";
+  $("cantidadCarros").value = row.cantidadCarros ?? 0;
+  $("cantidadMotos").value = row.cantidadMotos ?? 0;
+
+  $("placaCarro").value = (row.placaCarro ?? "");
+  $("placaMoto").value = (row.placaMoto ?? "");
+  $("moroso").checked = !!row.moroso;
+  $("deudaMoroso").value = row.deudaMoroso ?? 0;
+
+  toggleDeuda();
+
+  $("formTitle").textContent = "Editar propietario";
+  $("btnGuardar").textContent = "Actualizar";
+  $("btnCancelar").hidden = false;
+  state.editingId = row.id;
+}
+
+function resetForm() {
+  form.reset();
+  $("cantidadCarros").value = 0;
+  $("cantidadMotos").value = 0;
+
+  $("placaCarro").value = "";
+  $("placaMoto").value = "";
+
+  $("moroso").checked = false;
+  $("deudaMoroso").value = 0;
+  toggleDeuda();
+
+  $("id").value = "";
+  $("formTitle").textContent = "Agregar propietario";
+  $("btnGuardar").textContent = "Guardar";
+  $("btnCancelar").hidden = true;
+  state.editingId = null;
+  setMsg("");
+}
+
+function badgeMoroso(isMoroso) {
+  if (isMoroso) return `<span class="badge bad">Sí</span>`;
+  return `<span class="badge ok">No</span>`;
+}
+
+function escapeHtml(s) {
+  return String(s ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+async function loadList() {
+  const q = $("q").value.trim();
+  const fMoroso = $("fMoroso").value;
+
+  const params = new URLSearchParams();
+  if (q) params.set("q", q);
+  if (fMoroso !== "") params.set("moroso", fMoroso);
+
+  const res = await fetch(`/api/propietarios?${params.toString()}`);
+  const rows = await res.json();
+
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>${escapeHtml(r.nombrePropietario)}</td>
+      <td>${escapeHtml(r.correo)}</td>
+      <td>${escapeHtml(r.cedula)}</td>
+      <td>${escapeHtml(r.torre)}</td>
+      <td>${escapeHtml(r.apartamento)}</td>
+      <td>${r.cantidadCarros}</td>
+      <td>${r.cantidadMotos}</td>
+      <td>${escapeHtml(r.placaCarro || "")}</td>
+      <td>${escapeHtml(r.placaMoto || "")}</td>
+      <td>${badgeMoroso(!!r.moroso)}</td>
+      <td>$ ${moneyCOP(r.deudaMoroso || 0)}</td>
+      <td>
+        <div class="actionsCell">
+          <button class="iconBtn" data-edit="${r.id}">Editar</button>
+          <button class="iconBtn danger" data-del="${r.id}">Eliminar</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+
+  // bind buttons
+  tbody.querySelectorAll("[data-edit]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-edit");
+      const r = await fetch(`/api/propietarios/${id}`).then(x => x.json());
+      fillForm(r);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+
+  tbody.querySelectorAll("[data-del]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-del");
+      const ok = confirm("¿Seguro que quieres eliminar este registro?");
+      if (!ok) return;
+
+      const res = await fetch(`/api/propietarios/${id}`, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) return setMsg(data.error || "Error eliminando", "err");
+
+      setMsg("Eliminado ✅", "ok");
+      if (state.editingId === Number(id)) resetForm();
+      await loadList();
+    });
+  });
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  setMsg("");
+
+  const payload = readForm();
+
+  // mini validación frontend
+  if (!payload.nombrePropietario || !payload.correo || !payload.cedula || !payload.torre || !payload.apartamento) {
+    return setMsg("Te faltan campos obligatorios 😅", "err");
+  }
+
+  // Validación moroso/deuda
+  if (payload.moroso && (!payload.deudaMoroso || payload.deudaMoroso <= 0)) {
+    return setMsg("Si está moroso, pon cuánto debe (mayor a 0).", "err");
+  }
+
+  const isEdit = !!state.editingId;
+  const url = isEdit ? `/api/propietarios/${state.editingId}` : "/api/propietarios";
+  const method = isEdit ? "PUT" : "POST";
+
+  const res = await fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    return setMsg(data.error || "Algo falló guardando.", "err");
+  }
+
+  setMsg(isEdit ? "Actualizado ✅" : "Guardado ✅", "ok");
+  resetForm();
+  await loadList();
+});
+
+$("btnCancelar").addEventListener("click", resetForm);
+$("btnBuscar").addEventListener("click", loadList);
+$("q").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") loadList();
+});
+
+// Deuda depende del checkbox moroso
+$("moroso").addEventListener("change", toggleDeuda);
+toggleDeuda();
+
+/* ===========================
+   MEJORA: Backup (botón)
+   =========================== */
+const btnBackup = document.getElementById("btnBackup");
+if (btnBackup) {
+  btnBackup.addEventListener("click", async () => {
+    setMsg("Creando backup...", "");
+    try {
+      const res = await fetch("/api/backup", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data.ok) {
+        return setMsg(data.error || "No se pudo crear el backup.", "err");
+      }
+
+      setMsg(`Backup creado ✅ (${data.file})`, "ok");
+    } catch (e) {
+      setMsg("No se pudo crear el backup (error de red).", "err");
+    }
+  });
+}
+
+// Inicializar: verificar auth y cargar datos
+checkAuth();
+loadList();

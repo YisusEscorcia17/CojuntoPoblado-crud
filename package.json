@@ -1,0 +1,15 @@
+{
+  "name": "parqueadero-crud",
+  "version": "1.0.0",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "sqlite3": "^5.1.7",
+    "express-session": "^1.17.3",
+    "bcryptjs": "^2.4.3"
+  }
+}

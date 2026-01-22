@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | Conjunto el Poblado</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #0f1a30;
+      --text: #e7eefc;
+      --muted: #a9b7d1;
+      --border: #213456;
+      --accent: #4ea1ff;
+      --danger: #ff5a7a;
+      --ok: #2ee59d;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+        Arial, sans-serif;
+      background: radial-gradient(
+          1200px 600px at 10% -10%,
+          #1a2b55 0%,
+          transparent 60%
+        ),
+        radial-gradient(
+          900px 500px at 110% 10%,
+          #2d1f55 0%,
+          transparent 55%
+        ),
+        var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .login-container {
+      background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.04),
+        rgba(255, 255, 255, 0.02)
+      );
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h1 {
+      margin: 0 0 10px 0;
+      font-size: 28px;
+      letter-spacing: 0.2px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin: 0 0 30px 0;
+      font-size: 13px;
+    }
+
+    .form-group {
+      margin: 24px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input {
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(11, 18, 32, 0.6);
+      color: var(--text);
+      padding: 12px 14px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    input::placeholder {
+      color: rgba(167, 183, 209, 0.5);
+    }
+
+    input:focus {
+      border-color: rgba(78, 161, 255, 0.8);
+      box-shadow: 0 0 0 3px rgba(78, 161, 255, 0.15);
+      background: rgba(11, 18, 32, 0.8);
+    }
+
+    .btn {
+      border: none;
+      padding: 12px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      background: linear-gradient(
+        180deg,
+        rgba(78, 161, 255, 0.95),
+        rgba(78, 161, 255, 0.7)
+      );
+      color: #071022;
+      transition: all 0.2s ease;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    .btn:hover {
+      filter: brightness(1.08);
+      box-shadow: 0 6px 20px rgba(78, 161, 255, 0.3);
+    }
+
+    .msg {
+      min-height: 18px;
+      margin: 16px 0 0 0;
+      padding: 14px 16px;
+      font-size: 13px;
+      border-radius: 8px;
+      display: none;
+      border: 1px solid;
+    }
+
+    .msg:not(:empty) {
+      display: block;
+    }
+
+    .msg.ok {
+      color: var(--ok);
+      border-color: rgba(46, 229, 157, 0.3);
+      background: rgba(46, 229, 157, 0.08);
+    }
+
+    .msg.err {
+      color: var(--danger);
+      border-color: rgba(255, 90, 122, 0.3);
+      background: rgba(255, 90, 122, 0.08);
+    }
+
+    .demo-info {
+      background: rgba(78, 161, 255, 0.08);
+      border: 1px solid rgba(78, 161, 255, 0.3);
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .demo-info strong {
+      color: var(--accent);
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .demo-info code {
+      background: rgba(11, 18, 32, 0.6);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      color: var(--ok);
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1>🔐 Login</h1>
+    <p class="subtitle">Sistema de gestión - Conjunto el Poblado</p>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="usuario">Usuario</label>
+        <input
+          id="usuario"
+          type="text"
+          placeholder="Ingresa tu usuario"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="contrasena">Contraseña</label>
+        <input
+          id="contrasena"
+          type="password"
+          placeholder="Ingresa tu contraseña"
+          required
+        />
+      </div>
+
+      <button type="submit" class="btn">Ingresar</button>
+    </form>
+
+    <div id="msg" class="msg"></div>
+
+    <div class="demo-info">
+      <strong>🧪 Demo - Credenciales por defecto:</strong>
+      <div>
+        <strong>Admin:</strong>
+        usuario: <code>admin</code> | contraseña: <code>admin123</code>
+      </div>
+      <div style="margin-top: 10px;">
+        <strong>Vigilante:</strong>
+        usuario: <code>vigilante</code> | contraseña: <code>vigilante123</code>
+      </div>
+      <div style="margin-top: 10px; color: var(--danger);">
+        ⚠️ Cambia las contraseñas antes de ir a producción
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    const msgEl = document.getElementById("msg");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const usuario = document.getElementById("usuario").value.trim();
+      const contrasena = document.getElementById("contrasena").value;
+
+      msgEl.className = "msg";
+      msgEl.textContent = "Cargando...";
+
+      try {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ usuario, contrasena })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          msgEl.className = "msg err";
+          msgEl.textContent = data.error || "Error en login";
+          return;
+        }
+
+        msgEl.className = "msg ok";
+        msgEl.textContent = "✅ Login exitoso. Redirigiendo...";
+
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 1000);
+      } catch (err) {
+        msgEl.className = "msg err";
+        msgEl.textContent = "Error de conexión";
+      }
+    });
+  </script>
+</body>
+</html>

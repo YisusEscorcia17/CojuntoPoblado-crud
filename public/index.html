@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Sistema de gestión de propietarios y vehículos para conjuntos residenciales" />
+  <title>Gestión de Propietarios | Conjunto el Poblado</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="wrap header">
+    <div>
+      <h1>🏢 Gestión de Propietarios</h1>
+      <p class="muted">Sistema de control de propietarios, vehículos y estado de mora</p>
+    </div>
+    <div class="header-info"></div>
+  </header>
+
+  <main class="wrap grid">
+    <!-- FORMULARIO -->
+    <section class="card form-section" data-admin-only>
+      <h2 id="formTitle">✏️ Agregar propietario</h2>
+
+      <form id="form">
+        <input type="hidden" id="id" />
+
+        <!-- Información básica -->
+        <div class="form-group">
+          <h3 class="group-title">Información básica</h3>
+          
+          <div class="row">
+            <label for="nombrePropietario">Nombre del propietario</label>
+            <input id="nombrePropietario" type="text" placeholder="Ej: Juan Pérez" required />
+          </div>
+
+          <div class="row">
+            <label for="correo">Correo electrónico</label>
+            <input id="correo" type="email" placeholder="correo@dominio.com" required />
+          </div>
+
+          <div class="row">
+            <label for="cedula">Cédula</label>
+            <input id="cedula" type="text" placeholder="Ej: 1082123456" required />
+          </div>
+        </div>
+
+        <!-- Ubicación -->
+        <div class="form-group">
+          <h3 class="group-title">Ubicación</h3>
+          
+          <div class="two">
+            <div class="row">
+              <label for="torre">Torre</label>
+              <input id="torre" type="text" placeholder="Ej: A" required />
+            </div>
+            <div class="row">
+              <label for="apartamento">Apartamento</label>
+              <input id="apartamento" type="text" placeholder="Ej: 503" required />
+            </div>
+          </div>
+        </div>
+
+        <!-- Vehículos -->
+        <div class="form-group">
+          <h3 class="group-title">Vehículos</h3>
+          
+          <div class="two">
+            <div class="row">
+              <label for="cantidadCarros">Cantidad de carros</label>
+              <input id="cantidadCarros" type="number" min="0" value="0" />
+            </div>
+            <div class="row">
+              <label for="cantidadMotos">Cantidad de motos</label>
+              <input id="cantidadMotos" type="number" min="0" value="0" />
+            </div>
+          </div>
+
+          <div class="two">
+            <div class="row">
+              <label for="placaCarro">Placa del carro</label>
+              <input id="placaCarro" type="text" placeholder="ABC123" />
+            </div>
+            <div class="row">
+              <label for="placaMoto">Placa de la moto</label>
+              <input id="placaMoto" type="text" placeholder="XYZ45D" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Estado de mora -->
+        <div class="form-group">
+          <h3 class="group-title">Estado de mora</h3>
+          
+          <div class="row inline-group">
+            <input id="moroso" type="checkbox" />
+            <label for="moroso">¿Está en mora?</label>
+          </div>
+
+          <div class="row">
+            <label for="deudaMoroso">Deuda total (COP)</label>
+            <input id="deudaMoroso" type="number" min="0" step="1" value="0" disabled />
+          </div>
+        </div>
+
+        <div class="actions" data-admin-only>
+          <button class="btn" type="submit" id="btnGuardar">💾 Guardar</button>
+          <button class="btn ghost" type="button" id="btnCancelar" hidden>✖️ Cancelar</button>
+        </div>
+
+        <p id="msg" class="msg"></p>
+      </form>
+    </section>
+
+    <!-- LISTADO Y BÚSQUEDA -->
+    <section class="card list-section">
+      <h2>📋 Listado de propietarios</h2>
+      
+      <div class="toolbar">
+        <p class="muted">Busca, filtra y gestiona tus registros</p>
+
+        <div class="filters">
+          <div class="search-group">
+            <input id="q" type="text" placeholder="🔍 Buscar por nombre, cédula, placa..." />
+            <select id="fMoroso">
+              <option value="">Todos</option>
+              <option value="1">⚠️ Solo morosos</option>
+              <option value="0">✅ Solo al día</option>
+            </select>
+            <button class="btn" id="btnBuscar" type="button">Buscar</button>
+          </div>
+
+          <div class="export-group" data-admin-only>
+            <a class="btn ghost" href="/api/export/propietarios.csv" title="Descargar listado en CSV">📥 Propietarios</a>
+            <a class="btn ghost" href="/api/export/historial.csv" title="Descargar historial en CSV">📥 Historial</a>
+            <button class="btn ghost" id="btnBackup" type="button" title="Crear respaldo de la base de datos">💾 Backup</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Cédula</th>
+              <th>Torre</th>
+              <th>Apto</th>
+              <th>Carros</th>
+              <th>Motos</th>
+              <th>Placa carro</th>
+              <th>Placa moto</th>
+              <th>Moroso</th>
+              <th>Deuda</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p>Sistema de gestión de propietarios © 2026 | Conjunto el Poblado</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
