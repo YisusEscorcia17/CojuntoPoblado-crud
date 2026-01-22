@@ -6,7 +6,7 @@ import { fileURLToPath } from "url";
 import session from "express-session";
 import SqliteStore from "connect-sqlite3";
 import { db, initDb } from "./db.js";
-import { requireAuth, requireAdmin, verifyLogin, createUser, changePassword, changeUsername, getUserById, hashPassword, verifyPassword } from "./auth.js";
+import { requireAuth, requireAdmin, verifyLogin, createUser, changePassword, changeUsername, getUserById, hashPassword } from "./auth.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -55,7 +55,7 @@ async function createDefaultUsers() {
     });
     
     if (!admin) {
-      await createUser("admin", "admin123", "admin");
+      await createUser("admin", "Admin@2026!Secure", "admin");
     }
     
     // Verificar y crear usuario vigilante
@@ -67,7 +67,7 @@ async function createDefaultUsers() {
     });
     
     if (!vigilante) {
-      await createUser("vigilante", "vigilante123", "vigilante");
+      await createUser("vigilante", "Vigilante@2026!Secure", "vigilante");
     }
   } catch (err) {
     // Silenciosamente fallar si ya existen
@@ -204,68 +204,51 @@ app.post("/api/auth/login", async (req, res) => {
 app.post("/api/auth/setup-password", async (req, res) => {
   const { usuario, contrasenaActual, contrasenaNueva, confirmacion } = req.body;
   
-  console.log("📝 Setup password attempt para usuario:", usuario);
-  
   if (!usuario || !contrasenaActual || !contrasenaNueva || !confirmacion) {
-    console.log("❌ Campos faltantes");
     return res.status(400).json({ ok: false, error: "Todos los campos son requeridos" });
   }
   
   if (contrasenaNueva !== confirmacion) {
-    console.log("❌ Contraseñas no coinciden");
     return res.status(400).json({ ok: false, error: "Las contraseñas no coinciden" });
   }
   
   if (contrasenaNueva.length < 6) {
-    console.log("❌ Contraseña muy corta");
     return res.status(400).json({ ok: false, error: "La contraseña debe tener al menos 6 caracteres" });
   }
   
   try {
     // Verificar que el usuario y contraseña sean correctos
-    console.log("🔍 Verificando login...");
     const user = await verifyLogin(usuario, contrasenaActual);
     if (!user) {
-      console.log("❌ Login incorrecto");
       return res.status(401).json({ ok: false, error: "Usuario o contraseña incorrectos" });
     }
     
-    console.log("✅ Login correcto. Usuario:", user.usuario, "Rol:", user.rol);
-    
     // Verificar que sea admin (por seguridad)
     if (user.rol !== "admin") {
-      console.log("❌ No es admin");
       return res.status(403).json({ ok: false, error: "Solo el admin puede cambiar contraseña inicial" });
     }
     
     // Generar hash de la nueva contraseña usando la función de auth.js
-    console.log("🔐 Generando hash...");
     const newHash = await hashPassword(contrasenaNueva);
-    console.log("✅ Hash generado");
     
     // Actualizar contraseña en BD
-    console.log("💾 Actualizando BD...");
     await new Promise((resolve, reject) => {
       db.run(
         "UPDATE usuarios SET contrasena = ? WHERE usuario = ?",
         [newHash, usuario],
         function(err) {
           if (err) {
-            console.error("❌ Error en UPDATE:", err);
             reject(err);
           } else {
-            console.log("✅ Contraseña actualizada. Cambios:", this.changes);
             resolve();
           }
         }
       );
     });
     
-    console.log("✅ Setup password completado exitosamente");
     return res.json({ ok: true, mensaje: "Contraseña cambiada exitosamente" });
   } catch (err) {
-    console.error("❌ Error en setup-password:", err);
-    return res.status(500).json({ ok: false, error: "Error al cambiar contraseña: " + err.message });
+    return res.status(500).json({ ok: false, error: "Error al cambiar contraseña" });
   }
 });
 
@@ -282,73 +265,6 @@ app.post("/api/auth/logout", (req, res) => {
   req.session.destroy(() => {
     res.json({ ok: true });
   });
-});
-
-// Debug: Verificar estado de BD (SOLO EN DESARROLLO)
-app.get("/api/debug/status", (req, res) => {
-  db.all("SELECT id, usuario, rol FROM usuarios", (err, rows) => {
-    if (err) {
-      return res.json({ 
-        ok: false, 
-        error: err.message,
-        usuarios: []
-      });
-    }
-    
-    res.json({
-      ok: true,
-      usuarios: rows,
-      totalUsuarios: rows ? rows.length : 0,
-      enviroment: NODE_ENV
-    });
-  });
-});
-
-// Debug: Testear login
-app.post("/api/debug/test-login", async (req, res) => {
-  const { usuario, contrasena } = req.body;
-  
-  console.log("🔍 DEBUG: Test login para:", usuario);
-  
-  try {
-    // Obtener usuario de BD
-    const user = await new Promise((resolve, reject) => {
-      db.get("SELECT * FROM usuarios WHERE usuario = ?", [usuario], (err, row) => {
-        if (err) reject(err);
-        else resolve(row);
-      });
-    });
-    
-    if (!user) {
-      return res.json({ ok: false, error: "Usuario no encontrado", usuario });
-    }
-    
-    console.log("✅ Usuario encontrado en BD:", user.usuario, "Rol:", user.rol);
-    
-    // Verificar contraseña
-    const isValid = await verifyPassword(contrasena, user.contrasena);
-    
-    console.log("🔑 Contraseña válida?", isValid);
-    
-    if (!isValid) {
-      return res.json({ 
-        ok: false, 
-        error: "Contraseña incorrecta",
-        usuario,
-        hashEnBD: user.contrasena ? user.contrasena.substring(0, 20) + "..." : "VACÍO"
-      });
-    }
-    
-    res.json({ 
-      ok: true, 
-      mensaje: "Login exitoso",
-      usuario: user.usuario,
-      rol: user.rol
-    });
-  } catch (err) {
-    console.error("❌ Error en test-login:", err);
-    res.json({ ok: false, error: err.message });
-  }
 });
 
 // Cambiar contraseña
