@@ -279,31 +279,39 @@ app.post("/api/auth/logout", (req, res) => {
   });
 });
 
-// Reinicio de BD (endpoint secreto para emergencias)
-app.post("/api/admin/reset-db", async (req, res) => {
-  const { token } = req.body;
+// DIAGNÓSTICO: Ver exactamente qué hay en la BD (EXTREMADAMENTE SIMPLE)
+app.get("/diagnose", (req, res) => {
+  const fs = require("fs");
+  const path = require("path");
   
-  // Token simple de emergencia
-  if (token !== "RESET2026POBLADO") {
-    return res.status(401).json({ ok: false, error: "No autorizado" });
-  }
+  const dbPath = "./database.sqlite";
+  const exists = fs.existsSync(dbPath);
+  const size = exists ? fs.statSync(dbPath).size : 0;
   
-  try {
-    // Limpiar tabla usuarios
-    await new Promise((resolve, reject) => {
-      db.run("DELETE FROM usuarios", (err) => {
-        if (err) reject(err);
-        else resolve();
-      });
+  // Intentar contar usuarios
+  let userCount = "ERROR";
+  let adminUser = "NO ENCONTRADO";
+  let allUsers = [];
+  
+  db.all("SELECT id, usuario, rol, LENGTH(contrasena) as passwdLen FROM usuarios", (err, rows) => {
+    if (err) {
+      userCount = "ERROR: " + err.message;
+    } else {
+      userCount = rows ? rows.length : 0;
+      allUsers = rows || [];
+    }
+    
+    res.json({
+      dbExists: exists,
+      dbSize: size + " bytes",
+      dbPath: dbPath,
+      userCount: userCount,
+      users: allUsers,
+      environment: NODE_ENV,
+      port: PORT,
+      timestamp: new Date().toISOString()
     });
-    
-    // Crear usuarios por defecto
-    await createDefaultUsers();
-    
-    res.json({ ok: true, mensaje: "BD reiniciada" });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
+  });
 });
 
 // Cambiar contraseña
