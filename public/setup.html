@@ -455,18 +455,23 @@
         
         const data = await response.json();
         
-        if (response.ok) {
+        console.log('Response status:', response.status);
+        console.log('Response data:', data);
+        
+        if (response.ok && data.ok) {
           showSuccess('✅ Contraseña cambiada exitosamente. Redirigiendo a login...');
           setTimeout(() => {
             window.location.href = '/login.html';
           }, 2000);
         } else {
-          showError(data.error || 'Error al cambiar contraseña');
+          const errorMsg = data.error || data.mensaje || 'Error desconocido al cambiar contraseña';
+          showError('❌ ' + errorMsg);
           document.getElementById('setupForm').style.display = 'block';
           document.getElementById('loading').style.display = 'none';
         }
       } catch (error) {
-        showError('Error de conexión: ' + error.message);
+        console.error('Error:', error);
+        showError('❌ Error de conexión: ' + error.message);
         document.getElementById('setupForm').style.display = 'block';
         document.getElementById('loading').style.display = 'none';
       }

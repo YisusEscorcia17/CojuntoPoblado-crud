@@ -204,49 +204,68 @@ app.post("/api/auth/login", async (req, res) => {
 app.post("/api/auth/setup-password", async (req, res) => {
   const { usuario, contrasenaActual, contrasenaNueva, confirmacion } = req.body;
   
+  console.log("📝 Setup password attempt para usuario:", usuario);
+  
   if (!usuario || !contrasenaActual || !contrasenaNueva || !confirmacion) {
-    return res.status(400).json({ error: "Todos los campos son requeridos" });
+    console.log("❌ Campos faltantes");
+    return res.status(400).json({ ok: false, error: "Todos los campos son requeridos" });
   }
   
   if (contrasenaNueva !== confirmacion) {
-    return res.status(400).json({ error: "Las contraseñas no coinciden" });
+    console.log("❌ Contraseñas no coinciden");
+    return res.status(400).json({ ok: false, error: "Las contraseñas no coinciden" });
   }
   
   if (contrasenaNueva.length < 6) {
-    return res.status(400).json({ error: "La contraseña debe tener al menos 6 caracteres" });
+    console.log("❌ Contraseña muy corta");
+    return res.status(400).json({ ok: false, error: "La contraseña debe tener al menos 6 caracteres" });
   }
   
   try {
     // Verificar que el usuario y contraseña sean correctos
+    console.log("🔍 Verificando login...");
     const user = await verifyLogin(usuario, contrasenaActual);
     if (!user) {
-      return res.status(401).json({ error: "Usuario o contraseña incorrectos" });
+      console.log("❌ Login incorrecto");
+      return res.status(401).json({ ok: false, error: "Usuario o contraseña incorrectos" });
     }
+    
+    console.log("✅ Login correcto. Usuario:", user.usuario, "Rol:", user.rol);
     
     // Verificar que sea admin (por seguridad)
     if (user.rol !== "admin") {
-      return res.status(403).json({ error: "Solo el admin puede cambiar contraseña inicial" });
+      console.log("❌ No es admin");
+      return res.status(403).json({ ok: false, error: "Solo el admin puede cambiar contraseña inicial" });
     }
     
     // Generar hash de la nueva contraseña usando la función de auth.js
+    console.log("🔐 Generando hash...");
     const newHash = await hashPassword(contrasenaNueva);
+    console.log("✅ Hash generado");
     
     // Actualizar contraseña en BD
+    console.log("💾 Actualizando BD...");
     await new Promise((resolve, reject) => {
       db.run(
         "UPDATE usuarios SET contrasena = ? WHERE usuario = ?",
         [newHash, usuario],
         function(err) {
-          if (err) reject(err);
-          else resolve();
+          if (err) {
+            console.error("❌ Error en UPDATE:", err);
+            reject(err);
+          } else {
+            console.log("✅ Contraseña actualizada. Cambios:", this.changes);
+            resolve();
+          }
         }
       );
     });
     
-    res.json({ ok: true, mensaje: "Contraseña cambiada exitosamente" });
+    console.log("✅ Setup password completado exitosamente");
+    return res.json({ ok: true, mensaje: "Contraseña cambiada exitosamente" });
   } catch (err) {
-    console.error("Error en setup-password:", err);
-    res.status(500).json({ error: "Error al cambiar contraseña: " + err.message });
+    console.error("❌ Error en setup-password:", err);
+    return res.status(500).json({ ok: false, error: "Error al cambiar contraseña: " + err.message });
   }
 });
 
