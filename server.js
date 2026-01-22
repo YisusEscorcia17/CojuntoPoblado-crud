@@ -6,7 +6,7 @@ import { fileURLToPath } from "url";
 import session from "express-session";
 import SqliteStore from "connect-sqlite3";
 import { db, initDb } from "./db.js";
-import { requireAuth, requireAdmin, verifyLogin, createUser, changePassword, changeUsername, getUserById } from "./auth.js";
+import { requireAuth, requireAdmin, verifyLogin, createUser, changePassword, changeUsername, getUserById, hashPassword } from "./auth.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -228,9 +228,8 @@ app.post("/api/auth/setup-password", async (req, res) => {
       return res.status(403).json({ error: "Solo el admin puede cambiar contraseña inicial" });
     }
     
-    // Generar hash de la nueva contraseña
-    const contrasenaBcrypt = require("bcryptjs");
-    const newHash = await contrasenaBcrypt.hash(contrasenaNueva, 10);
+    // Generar hash de la nueva contraseña usando la función de auth.js
+    const newHash = await hashPassword(contrasenaNueva);
     
     // Actualizar contraseña en BD
     await new Promise((resolve, reject) => {
@@ -246,7 +245,8 @@ app.post("/api/auth/setup-password", async (req, res) => {
     
     res.json({ ok: true, mensaje: "Contraseña cambiada exitosamente" });
   } catch (err) {
-    res.status(500).json({ error: "Error al cambiar contraseña" });
+    console.error("Error en setup-password:", err);
+    res.status(500).json({ error: "Error al cambiar contraseña: " + err.message });
   }
 });
 
