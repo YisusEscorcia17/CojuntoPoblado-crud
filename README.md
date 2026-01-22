@@ -55,9 +55,57 @@ npm start
 
 Luego accede a `http://localhost:3000`
 
+## � Gestionar Usuarios
+
+### Opción 1: Interfaz de Menú (Recomendado)
+
+```bash
+node gestionar-usuarios.js
+```
+
+Esto abre un menú interactivo con opciones para:
+- Listar usuarios
+- Crear nuevos usuarios
+- Eliminar usuarios
+- Ejecutar setup
+
+### Opción 2: Scripts Individuales
+
+```bash
+# Listar todos los usuarios
+node listar-usuarios.js
+
+# Crear un nuevo usuario (interactivo)
+node crear-usuario.js
+
+# Eliminar un usuario (interactivo)
+node eliminar-usuario.js
+
+# Setup: Crear usuarios de demostración
+node setup.js
+```
+
 ## 🔑 Credenciales por Defecto
 
 ⚠️ **IMPORTANTE**: Cambiar estas contraseñas en producción
+
+Cuando ejecutas `node setup.js`, se crean automáticamente:
+
+```
+Admin:
+  Usuario: admin
+  Contraseña: admin123
+
+Vigilante:
+  Usuario: vigilante
+  Contraseña: vigilante123
+```
+
+**Cambiar credenciales:**
+1. Inicia sesión en la web
+2. Haz clic en "⚙️ Credenciales"
+3. Cambia usuario y/o contraseña
+
 
 ```
 Admin:
