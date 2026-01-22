@@ -284,6 +284,26 @@ app.post("/api/auth/logout", (req, res) => {
   });
 });
 
+// Debug: Verificar estado de BD (SOLO EN DESARROLLO)
+app.get("/api/debug/status", (req, res) => {
+  db.all("SELECT id, usuario, rol FROM usuarios", (err, rows) => {
+    if (err) {
+      return res.json({ 
+        ok: false, 
+        error: err.message,
+        usuarios: []
+      });
+    }
+    
+    res.json({
+      ok: true,
+      usuarios: rows,
+      totalUsuarios: rows ? rows.length : 0,
+      enviroment: NODE_ENV
+    });
+  });
+});
+
 // Cambiar contraseña
 app.post("/api/auth/change-password", requireAuth, async (req, res) => {
   const { contrasenaActual, contrasenaNueva, confirmacion } = req.body;
