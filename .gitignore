@@ -1,6 +1,7 @@
 node_modules/
 .env
 .env.local
+.env.*.local
 database.sqlite
 database.sqlite-wal
 database.sqlite-shm
@@ -12,3 +13,5 @@ backups/
 dist/
 build/
 CREDENCIALES_INICIALES.md
+.session
+sessions.db

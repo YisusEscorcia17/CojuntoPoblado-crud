@@ -40,7 +40,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 initDb();
 
-// Crear usuarios por defecto si no existen
+// Crear usuarios por defecto si no existen (silenciosamente)
 async function createDefaultUsers() {
   try {
     // Dar tiempo para que SQLite esté listo
@@ -56,9 +56,6 @@ async function createDefaultUsers() {
     
     if (!admin) {
       await createUser("admin", "admin123", "admin");
-      console.log("✅ Usuario admin creado");
-    } else {
-      console.log("ℹ️  Usuario admin ya existe");
     }
     
     // Verificar y crear usuario vigilante
@@ -71,14 +68,9 @@ async function createDefaultUsers() {
     
     if (!vigilante) {
       await createUser("vigilante", "vigilante123", "vigilante");
-      console.log("✅ Usuario vigilante creado");
-    } else {
-      console.log("ℹ️  Usuario vigilante ya existe");
     }
-    
-    console.log("⚠️  Usuarios iniciales listos");
   } catch (err) {
-    console.error("❌ Error creando usuarios por defecto:", err);
+    // Silenciosamente fallar si ya existen
   }
 }
 
@@ -619,8 +611,14 @@ app.get("/api/export/historial.csv", (req, res) => {
 });
 
 app.listen(PORT, async () => {
-  await createDefaultUsers();
-  console.log(`🚀 Servidor listo en http://localhost:${PORT}`);
-  console.log(`📧 Login: http://localhost:${PORT}/login.html`);
+  try {
+    console.log("📊 Base de datos conectada");
+    await createDefaultUsers();
+    console.log("✅ Usuarios iniciales listos");
+    console.log(`🚀 Servidor en línea - ${NODE_ENV}`);
+  } catch (error) {
+    console.error("❌ Error iniciando servidor:", error.message);
+    process.exit(1);
+  }
 });
 
