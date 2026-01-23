@@ -31,7 +31,13 @@ if (usePostgres) {
   db = {
     run: (sql, params = [], callback = () => {}) => {
       pool.query(sql, params)
-        .then(result => callback(null, result))
+        .then(result => {
+          // Simular el contexto de SQLite con lastID
+          const context = {
+            lastID: result.rows?.[0]?.id || result.rowCount || null
+          };
+          callback.call(context, null, result);
+        })
         .catch(err => callback(err));
     },
     get: (sql, params = [], callback) => {

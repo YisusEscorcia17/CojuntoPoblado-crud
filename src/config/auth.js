@@ -17,11 +17,15 @@ export function createUser(usuario, contrasena, rol = "vigilante") {
     try {
       const hashed = await hashPassword(contrasena);
       db.run(
-        "INSERT INTO usuarios (usuario, contrasena, rol) VALUES (?, ?, ?)",
+        "INSERT INTO usuarios (usuario, contrasena, rol) VALUES (?, ?, ?) RETURNING id",
         [usuario, hashed, rol],
-        function (err) {
-          if (err) reject(err);
-          else resolve({ id: this.lastID, usuario, rol });
+        function (err, result) {
+          if (err) {
+            reject(err);
+          } else {
+            const id = this.lastID || result?.rows?.[0]?.id || 1;
+            resolve({ id, usuario, rol });
+          }
         }
       );
     } catch (err) {

@@ -114,38 +114,6 @@ Este script:
    - `createdAt`: `CURRENT_TIMESTAMP`
 6. Haz clic en "Write Changes"
 
-## 🔑 Credenciales por Defecto
-
-⚠️ **IMPORTANTE**: Cambiar estas contraseñas en producción
-
-Cuando ejecutas `node setup.js`, se crean automáticamente:
-
-```
-Admin:
-  Usuario: admin
-  Contraseña: admin123
-
-Vigilante:
-  Usuario: vigilante
-  Contraseña: vigilante123
-```
-
-**Cambiar credenciales:**
-1. Inicia sesión en la web
-2. Haz clic en "⚙️ Credenciales"
-3. Cambia usuario y/o contraseña
-
-
-```
-Admin:
-  Usuario: admin
-  Contraseña: admin123
-
-Vigilante:
-  Usuario: vigilante
-  Contraseña: vigilante123
-```
-
 ## 📦 Stack Tecnológico
 
 - **Backend**: Node.js + Express
