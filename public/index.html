@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- Contenedor de notificaciones -->
+  <div id="toastContainer" class="toast-container"></div>
+  
   <header class="wrap header">
     <div>
       <h1>🏢 Gestión de Propietarios</h1>
@@ -106,8 +109,6 @@
           <button class="btn" type="submit" id="btnGuardar">💾 Guardar</button>
           <button class="btn ghost" type="button" id="btnCancelar" hidden>✖️ Cancelar</button>
         </div>
-
-        <p id="msg" class="msg"></p>
       </form>
     </section>
 
@@ -199,8 +200,6 @@
               <input id="confirmacion" type="password" placeholder="Confirma tu nueva contraseña" required />
             </div>
 
-            <div id="msgPassword" class="msg"></div>
-
             <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">Cambiar Contraseña</button>
           </form>
         </div>
@@ -217,8 +216,6 @@
               <label for="usuarioNuevo">Usuario Nuevo</label>
               <input id="usuarioNuevo" type="text" placeholder="Mínimo 3 caracteres" required />
             </div>
-
-            <div id="msgUsername" class="msg"></div>
 
             <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">Cambiar Usuario</button>
           </form>

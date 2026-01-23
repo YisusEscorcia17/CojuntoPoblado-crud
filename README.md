@@ -1,217 +1,159 @@
-# 🏢 Sistema de Gestión de Propietarios - Conjunto el Poblado
+# 🏢 Sistema de Gestión de Propietarios - Conjunto El Poblado
 
-Sistema web completo para la gestión de propietarios, vehículos y estado de mora en conjuntos residenciales.
+Sistema CRUD para gestión de propietarios, vehículos y estados de mora en conjuntos residenciales.
 
-## ✨ Características
+## 📁 Estructura del Proyecto
 
-- ✅ **Autenticación con roles**: Admin y Vigilante
-- ✅ **CRUD completo**: Crear, leer, actualizar y eliminar propietarios
-- ✅ **Búsqueda avanzada**: Por nombre, cédula, placa de vehículos
-- ✅ **Filtros**: Por estado de mora (morosos/al día)
-- ✅ **Exportación CSV**: De propietarios e historial
-- ✅ **Backup automático**: Cada 12 horas
-- ✅ **Historial de cambios**: Auditoría completa
-- ✅ **Responsive Design**: Funciona en desktop, tablet y móvil
-- ✅ **Interfaz moderna**: Diseño dark con gradientes
+```
+CojuntoPoblado-crud/
+├── src/
+│   ├── config/           # Configuraciones del sistema
+│   │   ├── auth.js       # Autenticación y gestión de usuarios
+│   │   ├── database.js   # Configuración de base de datos
+│   │   └── session.js    # Configuración de sesiones
+│   ├── middleware/       # Middlewares de Express
+│   │   └── authMiddleware.js
+│   ├── routes/           # Rutas de la API
+│   │   ├── auth.routes.js
+│   │   ├── propietarios.routes.js
+│   │   └── api.routes.js
+│   └── utils/            # Utilidades y helpers
+│       ├── backup.js     # Sistema de backups
+│       └── helpers.js    # Funciones auxiliares
+├── public/               # Archivos estáticos (frontend)
+│   ├── index.html
+│   ├── login.html
+│   ├── setup.html
+│   ├── app.js
+│   └── styles.css
+├── scripts/              # Scripts de utilidad
+│   └── gestionar-usuarios.js
+├── backups/              # Backups automáticos
+├── server.js             # Servidor principal
+├── package.json
+└── README.md
+```
 
-## 👥 Roles de Usuario
-
-### **Admin**
-- Control total del sistema
-- Crear, editar, eliminar propietarios
-- Descargar reportes (CSV)
-- Crear backups
-- Ver historial completo
-
-### **Vigilante**
-- Solo lectura y búsqueda
-- Ver información de propietarios
-- Buscar por nombre, cédula, placa
-- Filtrar por estado de mora
-- Sin acceso a crear/editar/eliminar
-
-## 🚀 Instalación Local
+## 🚀 Instalación
 
 ```bash
-# Clonar repositorio
-git clone <tu-url-del-repo>
-cd CojuntoPoblado-crud
-
 # Instalar dependencias
 npm install
 
-# Crear archivo .env
+# Configurar variables de entorno (IMPORTANTE)
 cp .env.example .env
-
-# Editar .env con tus valores
-# SESSION_SECRET=tu-secreto-aqui
-
-# Ejecutar setup (crear usuarios por defecto)
-node setup.js
+# Editar .env y cambiar SESSION_SECRET
 
 # Iniciar servidor
 npm start
+
+# Modo desarrollo (con nodemon)
+npm run dev
 ```
 
-Luego accede a `http://localhost:3000`
-
-## � Gestionar Usuarios
-
-### Opción 1: Interfaz de Menú (Recomendado)
+## 👥 Gestión de Usuarios
 
 ```bash
-node gestionar-usuarios.js
+# Menú interactivo para gestionar usuarios
+npm run users
 ```
 
-Esto abre un menú interactivo con opciones para:
+Opciones disponibles:
 - Listar usuarios
-- Crear nuevos usuarios
-- Eliminar usuarios
-- Ejecutar setup
+- Crear nuevo usuario (admin o vigilante)
+- Eliminar usuario
 
-### Opción 2: Scripts Individuales
+## 🔐 Usuarios Iniciales
+
+Al iniciar por primera vez, el sistema crea automáticamente usuarios por defecto con credenciales seguras.
+
+⚠️ **IMPORTANTE**: 
+- Las credenciales se guardan en `CREDENCIALES_INICIALES.md` (no se sube a Git)
+- **CAMBIAR INMEDIATAMENTE** después del primer inicio
+- Usar `npm run users` para gestionar usuarios de forma segura
+
+## 🎯 Características
+
+### Roles de Usuario
+
+**Administrador**:
+- CRUD completo de propietarios
+- Exportar datos (CSV)
+- Crear backups manuales
+- Acceso total al sistema
+
+**Vigilante**:
+- Solo lectura de propietarios
+- Búsqueda y filtros
+- Sin permisos de edición
+
+### Funcionalidades
+
+- ✅ Gestión de propietarios y vehículos
+- 🔍 Búsqueda y filtros avanzados
+- 📊 Control de estado de mora
+- 📥 Exportación a CSV
+- 💾 Backups automáticos cada 12 horas
+- 🔐 Sistema de autenticación seguro
+- 📱 Interfaz responsive
+- 🎨 Notificaciones toast visuales
+
+## 📊 Base de Datos
+
+SQLite con 3 tablas principales:
+- `propietarios`: Información de residentes
+- `usuarios`: Sistema de autenticación
+- `historial_movimientos`: Auditoría de cambios
+
+## 🔧 Scripts Disponibles
 
 ```bash
-# Listar todos los usuarios
-node listar-usuarios.js
-
-# Crear un nuevo usuario (interactivo)
-node crear-usuario.js
-
-# Eliminar un usuario (interactivo)
-node eliminar-usuario.js
-
-# Setup: Crear usuarios de demostración
-node setup.js
+npm start      # Iniciar servidor en producción
+npm run dev    # Iniciar en modo desarrollo
+npm run users  # Gestionar usuarios (CLI)
 ```
 
-### Opción 3: DB Browser SQLite + Script Helper
+## 🌐 Acceso
 
-Si prefieres usar **DB Browser SQLite**, necesitas generar el hash de la contraseña primero:
+- **URL Local**: http://localhost:3000
+- **Login**: `/login.html`
+- **Dashboard**: `/index.html`
+- **Diagnóstico**: `/diagnose`
 
-```bash
-# Generar hash para insertar manualmente
-node generar-hash.js
-```
+## 💾 Backups
 
-Este script:
-1. Te pide que escribas la contraseña
-2. Genera el hash bcryptjs automáticamente
-3. Te muestra el hash para copiar
-4. Te da instrucciones paso a paso para insertarlo en DB Browser SQLite
+- **Automáticos**: Cada 12 horas
+- **Manuales**: Botón en la interfaz (solo admin)
+- **Ubicación**: `backups/`
 
-**Pasos en DB Browser SQLite:**
-1. Abre `database.sqlite`
-2. Ve a pestaña "Browse Data"
-3. Selecciona tabla `usuarios`
-4. Haz clic en "New Record" (+)
-5. Llena los campos:
-   - `usuario`: Tu nombre de usuario
-   - `contrasena`: Pega el hash generado
-   - `rol`: `admin` o `vigilante`
-   - `activo`: `1`
-   - `createdAt`: `CURRENT_TIMESTAMP`
-6. Haz clic en "Write Changes"
+## 🔒 Seguridad
 
-## 🔑 Credenciales por Defecto
+- Contraseñas hasheadas con bcrypt
+- Sesiones HTTP-only
+- Validación de roles en backend
+- CSRF protection en producción
 
-⚠️ **IMPORTANTE**: Cambiar estas contraseñas en producción
-
-Cuando ejecutas `node setup.js`, se crean automáticamente:
-
-```
-Admin:
-  Usuario: admin
-  Contraseña: admin123
-
-Vigilante:
-  Usuario: vigilante
-  Contraseña: vigilante123
-```
-
-**Cambiar credenciales:**
-1. Inicia sesión en la web
-2. Haz clic en "⚙️ Credenciales"
-3. Cambia usuario y/o contraseña
-
-
-```
-Admin:
-  Usuario: admin
-  Contraseña: admin123
-
-Vigilante:
-  Usuario: vigilante
-  Contraseña: vigilante123
-```
-
-## 📦 Stack Tecnológico
-
-- **Backend**: Node.js + Express
-- **Base de datos**: SQLite3
-- **Autenticación**: express-session + bcryptjs
-- **Frontend**: HTML5 + CSS3 + Vanilla JavaScript
-- **Sesiones**: express-session
-
-## 🗄️ Base de Datos
-
-### Tablas
-
-- **usuarios**: Usuarios del sistema con roles
-- **propietarios**: Datos de propietarios
-- **historial_movimientos**: Auditoría de cambios
-
-## 🔐 Seguridad
-
-- Contraseñas hasheadas con bcryptjs (10 rounds)
-- Sesiones HTTP-only en producción
-- HTTPS en producción (Render lo proporciona)
-- Validación en backend de todos los permisos
-- CSRF protection vía sesiones
-
-## 📊 API Endpoints
+## 📝 API Endpoints
 
 ### Autenticación
-- `POST /api/auth/login` - Login
+- `POST /api/auth/login` - Iniciar sesión
+- `POST /api/auth/logout` - Cerrar sesión
 - `GET /api/auth/me` - Usuario actual
-- `POST /api/auth/logout` - Logout
+- `POST /api/auth/change-password` - Cambiar contraseña
+- `POST /api/auth/change-username` - Cambiar usuario
 
 ### Propietarios
-- `GET /api/propietarios` - Listar
-- `POST /api/propietarios` - Crear (Admin)
-- `PUT /api/propietarios/:id` - Actualizar (Admin)
-- `DELETE /api/propietarios/:id` - Eliminar (Admin)
+- `GET /api/propietarios` - Listar (con filtros)
+- `GET /api/propietarios/:id` - Obtener uno
+- `POST /api/propietarios` - Crear (admin)
+- `PUT /api/propietarios/:id` - Actualizar (admin)
+- `DELETE /api/propietarios/:id` - Eliminar (admin)
 
-### Reportes
-- `GET /api/export/propietarios.csv` - Exportar propietarios (Admin)
-- `GET /api/export/historial.csv` - Exportar historial (Admin)
-- `POST /api/backup` - Crear backup (Admin)
-
-## 🌐 Despliegue en Render
-
-1. **Conecta tu repositorio GitHub a Render**
-2. **Crea un nuevo Web Service**
-3. **Configura variables de entorno**:
-   ```
-   SESSION_SECRET=tu-secreto-super-seguro
-   NODE_ENV=production
-   ```
-4. **Build command**: `npm install`
-5. **Start command**: `npm start`
-
-Tu app estará en: `https://tu-app.onrender.com`
-
-## 📝 Notas
-
-- Los backups se guardan en `/backups/`
-- La BD SQLite se guarda en `database.sqlite`
-- El historial se mantiene automáticamente
-- Las sesiones expiran en 24 horas
-
-## 👨‍💻 Autor
-
-Hecho con ❤️ para Conjunto el Poblado
+### Utilidades
+- `POST /api/backup` - Crear backup manual
+- `GET /api/export/propietarios.csv` - Exportar propietarios
+- `GET /api/export/historial.csv` - Exportar historial
 
 ## 📄 Licencia
 
-Privada - Uso interno
+© 2026 Conjunto El Poblado - Uso interno

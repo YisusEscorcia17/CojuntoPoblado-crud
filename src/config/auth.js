@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { db } from "./db.js";
+import { db } from "./database.js";
 
 // Función para hashear contraseña
 export async function hashPassword(password) {
@@ -34,7 +34,7 @@ export function createUser(usuario, contrasena, rol = "vigilante") {
 export function getUserByUsername(usuario) {
   return new Promise((resolve, reject) => {
     db.get(
-      "SELECT * FROM usuarios WHERE usuario = ? AND activo = 1",
+      "SELECT * FROM usuarios WHERE usuario = ?",
       [usuario],
       (err, row) => {
         if (err) reject(err);
@@ -53,25 +53,6 @@ export async function verifyLogin(usuario, contrasena) {
   if (!isValid) return null;
   
   return { id: user.id, usuario: user.usuario, rol: user.rol };
-}
-
-// Middleware para verificar autenticación
-export function requireAuth(req, res, next) {
-  if (!req.session?.usuario) {
-    return res.status(401).json({ error: "No autenticado" });
-  }
-  next();
-}
-
-// Middleware para verificar que sea admin
-export function requireAdmin(req, res, next) {
-  if (!req.session?.usuario) {
-    return res.status(401).json({ error: "No autenticado" });
-  }
-  if (req.session.usuario.rol !== "admin") {
-    return res.status(403).json({ error: "No autorizado" });
-  }
-  next();
 }
 
 // Cambiar contraseña del usuario actual
@@ -111,7 +92,7 @@ export function changeUsername(userId, newUsername) {
 export function getUserById(id) {
   return new Promise((resolve, reject) => {
     db.get(
-      "SELECT id, usuario, rol FROM usuarios WHERE id = ? AND activo = 1",
+      "SELECT id, usuario, rol FROM usuarios WHERE id = ?",
       [id],
       (err, row) => {
         if (err) reject(err);

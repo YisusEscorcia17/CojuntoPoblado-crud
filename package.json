@@ -1,14 +1,13 @@
 {
-  "name": "parqueadero-crud",
-  "version": "1.0.0",
+  "name": "conjunto-poblado-crud",
+  "version": "2.0.0",
   "description": "Sistema CRUD de propietarios para Conjunto El Poblado",
   "main": "server.js",
   "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "agregar-usuario": "node agregar-usuario-produccion.js",
-    "listar-usuarios": "node listar-usuarios.js"
+    "users": "node scripts/gestionar-usuarios.js"
   },
   "dependencies": {
     "express": "^4.19.2",
