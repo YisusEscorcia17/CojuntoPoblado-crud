@@ -5,6 +5,10 @@ const state = {
   editingId: null,
   usuario: null,
   isAdmin: false,
+  currentPage: 1,
+  pageSize: 50,
+  totalRecords: 0,
+  allRecords: []
 };
 
 // Verificar autenticación
@@ -220,7 +224,20 @@ async function loadList() {
   if (fMoroso !== "") params.set("moroso", fMoroso);
 
   const res = await fetch(`/api/propietarios?${params.toString()}`);
-  const rows = await res.json();
+  const allRows = await res.json();
+  
+  // Guardar todos los registros
+  state.allRecords = allRows;
+  state.totalRecords = allRows.length;
+  
+  // Aplicar paginación
+  renderPage();
+}
+
+function renderPage() {
+  const start = (state.currentPage - 1) * state.pageSize;
+  const end = start + state.pageSize;
+  const rows = state.allRecords.slice(start, end);
 
   tbody.innerHTML = rows.map(r => `
     <tr>
@@ -245,6 +262,9 @@ async function loadList() {
       </td>
     </tr>
   `).join("");
+
+  // Actualizar info de paginación
+  updatePaginationInfo();
 
   // bind buttons
   tbody.querySelectorAll("[data-edit]").forEach(btn => {
@@ -271,6 +291,19 @@ async function loadList() {
       await loadList();
     });
   });
+}
+
+function updatePaginationInfo() {
+  const start = (state.currentPage - 1) * state.pageSize + 1;
+  const end = Math.min(state.currentPage * state.pageSize, state.totalRecords);
+  const totalPages = Math.ceil(state.totalRecords / state.pageSize);
+  
+  $("paginaActual").textContent = `${start}-${end}`;
+  $("totalRegistros").textContent = state.totalRecords;
+  $("pageInfo").textContent = `Página ${state.currentPage} de ${totalPages}`;
+  
+  $("btnPrevPage").disabled = state.currentPage === 1;
+  $("btnNextPage").disabled = state.currentPage >= totalPages;
 }
 
 form.addEventListener("submit", async (e) => {
@@ -554,6 +587,30 @@ btnImportarCSV?.addEventListener("click", async () => {
   } finally {
     btnImportarCSV.disabled = false;
     btnImportarCSV.textContent = "⬆️ Importar datos";
+  }
+});
+
+// Controles de paginación
+$("pageSize")?.addEventListener("change", (e) => {
+  state.pageSize = parseInt(e.target.value);
+  state.currentPage = 1;
+  renderPage();
+});
+
+$("btnPrevPage")?.addEventListener("click", () => {
+  if (state.currentPage > 1) {
+    state.currentPage--;
+    renderPage();
+    window.scrollTo({ top: document.querySelector('.tableWrap').offsetTop - 100, behavior: 'smooth' });
+  }
+});
+
+$("btnNextPage")?.addEventListener("click", () => {
+  const totalPages = Math.ceil(state.totalRecords / state.pageSize);
+  if (state.currentPage < totalPages) {
+    state.currentPage++;
+    renderPage();
+    window.scrollTo({ top: document.querySelector('.tableWrap').offsetTop - 100, behavior: 'smooth' });
   }
 });
 
