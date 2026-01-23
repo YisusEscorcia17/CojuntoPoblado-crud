@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Usuarios | Conjunto el Poblado</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="toastContainer" class="toast-container"></div>
+
+  <header class="wrap header">
+    <div>
+      <h1>👥 Gestión de Usuarios</h1>
+      <p class="muted">Administra los usuarios del sistema</p>
+    </div>
+    <div class="header-info"></div>
+  </header>
+
+  <main class="wrap grid">
+    <!-- FORMULARIO CREAR USUARIO -->
+    <section class="card">
+      <h2 id="formTitle">➕ Crear nuevo usuario</h2>
+
+      <form id="formUsuario">
+        <input type="hidden" id="editId">
+
+        <div class="form-group">
+          <div class="row">
+            <label for="usuario">Nombre de usuario</label>
+            <input id="usuario" type="text" placeholder="Ej: portero1" required>
+          </div>
+
+          <div class="row">
+            <label for="contrasena">Contraseña</label>
+            <input id="contrasena" type="password" placeholder="Escribe la contraseña aquí" required>
+          </div>
+
+          <div class="row">
+            <label for="rol">Rol</label>
+            <select id="rol" required>
+              <option value="">Selecciona un rol</option>
+              <option value="admin">👨‍💼 Administrador</option>
+              <option value="vigilante">👁️ Vigilante</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn" type="submit" id="btnGuardar">💾 Guardar usuario</button>
+          <button class="btn ghost" type="button" id="btnCancelar" hidden>✖️ Cancelar</button>
+        </div>
+
+        <div class="msg" id="formMsg"></div>
+      </form>
+
+      <div style="margin-top: 32px; padding-top: 32px; border-top: 1px solid var(--border);">
+        <a href="/index.html" class="btn ghost" style="width: 100%;">← Volver al inicio</a>
+      </div>
+    </section>
+
+    <!-- LISTA DE USUARIOS -->
+    <section class="card">
+      <h2>📋 Usuarios del sistema</h2>
+
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Usuario</th>
+              <th>Rol</th>
+              <th>Creado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <div id="emptyState" class="muted" style="text-align: center; padding: 40px; display: none;">
+        No hay usuarios registrados
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL CAMBIAR CONTRASEÑA -->
+  <div id="modalPassword" style="display: none;" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🔑 Cambiar contraseña</h2>
+        <button class="modal-close" onclick="cerrarModalPassword()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="passwordUserId">
+        <div class="row">
+          <label for="nuevaContrasena">Nueva contraseña</label>
+          <input id="nuevaContrasena" type="password" placeholder="Escribe la nueva contraseña">
+        </div>
+        <div class="actions" style="margin-top: 20px;">
+          <button class="btn" onclick="cambiarPassword()">💾 Guardar</button>
+          <button class="btn ghost" onclick="cerrarModalPassword()">Cancelar</button>
+        </div>
+        <div class="msg" id="passwordMsg"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p>© 2026 Conjunto el Poblado - Sistema de Gestión</p>
+    </div>
+  </footer>
+
+  <script src="usuarios.js"></script>
+</body>
+</html>

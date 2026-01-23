@@ -156,6 +156,38 @@ Vigilante:
 
 ## 🗄️ Base de Datos
 
+### Desarrollo: SQLite (Automático)
+- Se usa por defecto en desarrollo local
+- Archivo: `database.sqlite`
+- No requiere configuración
+
+### Producción: PostgreSQL (Recomendado)
+- El sistema detecta automáticamente si está en producción
+- Se activa con `NODE_ENV=production` y `DATABASE_URL`
+
+**Opciones de hosting PostgreSQL:**
+
+1. **Render PostgreSQL (Recomendado)**
+   - Gratis hasta 1GB
+   - Se crea junto a tu app
+   - Pasos:
+     1. En Render Dashboard → New → PostgreSQL
+     2. Copia el "Internal Database URL"
+     3. En tu Web Service → Environment → Agrega `DATABASE_URL`
+
+2. **Supabase**
+   - Gratis hasta 500MB
+   - Dashboard visual moderno
+   - Pasos:
+     1. Crea proyecto en https://supabase.com
+     2. Settings → Database → Connection String (URI)
+     3. Agrega como `DATABASE_URL` en Render
+
+3. **Neon**
+   - Serverless PostgreSQL
+   - Gratis hasta 512MB
+   - https://neon.tech
+
 ### Tablas
 
 - **usuarios**: Usuarios del sistema con roles
@@ -244,17 +276,61 @@ Ver archivo: `ejemplo-google-forms.csv`
 
 ## 🌐 Despliegue en Render
 
+### 1. Crear Base de Datos PostgreSQL
+
+1. En Render Dashboard → **New** → **PostgreSQL**
+2. Nombre: `conjunto-poblado-db`
+3. Plan: **Free**
+4. Click en **Create Database**
+5. Espera a que esté disponible
+6. Copia el **Internal Database URL** (se ve así: `postgresql://user:pass@host/db`)
+
+### 2. Crear Web Service
+
 1. **Conecta tu repositorio GitHub a Render**
-2. **Crea un nuevo Web Service**
-3. **Configura variables de entorno**:
-   ```
-   SESSION_SECRET=tu-secreto-super-seguro
-   NODE_ENV=production
-   ```
-4. **Build command**: `npm install`
-5. **Start command**: `npm start`
+2. **New** → **Web Service**
+3. Conecta tu repo `CojuntoPoblado-crud`
+
+### 3. Configurar variables de entorno
+
+En Environment:
+```
+NODE_ENV=production
+SESSION_SECRET=<tu-secreto-generado>
+DATABASE_URL=<internal-database-url-copiado>
+```
+
+**Generar SESSION_SECRET:**
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+### 4. Configurar comandos
+
+- **Build command**: `npm install`
+- **Start command**: `npm start`
+
+### 5. Deploy
+
+Click en **Create Web Service** y espera el deploy.
 
 Tu app estará en: `https://tu-app.onrender.com`
+
+### 🔍 Ver datos en tiempo real
+
+**Opción 1: Dashboard de Render**
+- Ve a tu PostgreSQL database en Render
+- Click en "Connect" → "External Connection"
+- Usa esos datos en pgAdmin, DBeaver o TablePlus
+
+**Opción 2: Supabase (si usas Supabase)**
+- Dashboard → Table Editor
+- Ves todos los datos en tiempo real desde el navegador
+
+**Herramientas recomendadas:**
+- **TablePlus** (Mac/Windows) - https://tableplus.com
+- **DBeaver** (Gratis, todas las plataformas) - https://dbeaver.io
+- **pgAdmin** (Gratis, oficial PostgreSQL) - https://www.pgadmin.org
 
 ## 📝 Notas
 

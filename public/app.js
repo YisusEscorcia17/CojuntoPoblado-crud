@@ -47,7 +47,8 @@ function updateUIByRole() {
           <span style="color: var(--muted);">${state.usuario}</span>
           <span style="background: ${roleBadgeColor}; color: var(--bg); padding: 4px 10px; border-radius: 16px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">${roleName}</span>
         </div>
-        <div style="display: flex; gap: 8px;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
+          ${state.isAdmin ? '<a href="/usuarios.html" class="btn ghost" style="padding: 8px 12px; font-size: 12px; white-space: nowrap; text-decoration: none;">👥 Usuarios</a>' : ''}
           <button id="btnCambiarCredenciales" class="btn ghost" style="padding: 8px 12px; font-size: 12px; white-space: nowrap;">⚙️ Credenciales</button>
           <button id="btnLogout" class="btn ghost" style="padding: 8px 12px; font-size: 12px; white-space: nowrap;">🚪 Salir</button>
         </div>
