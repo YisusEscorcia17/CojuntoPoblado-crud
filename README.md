@@ -8,6 +8,7 @@ Sistema web completo para la gestión de propietarios, vehículos y estado de mo
 - ✅ **CRUD completo**: Crear, leer, actualizar y eliminar propietarios
 - ✅ **Búsqueda avanzada**: Por nombre, cédula, placa de vehículos
 - ✅ **Filtros**: Por estado de mora (morosos/al día)
+- ✅ **Importación CSV**: Carga masiva desde Google Forms
 - ✅ **Exportación CSV**: De propietarios e historial
 - ✅ **Backup automático**: Cada 12 horas
 - ✅ **Historial de cambios**: Auditoría completa
@@ -169,7 +170,58 @@ Vigilante:
 - Validación en backend de todos los permisos
 - CSRF protection vía sesiones
 
-## 📊 API Endpoints
+## � Importación desde Google Forms
+
+El sistema permite cargar datos masivos desde archivos CSV exportados de Google Forms.
+
+### 🎯 Formato del CSV
+
+Tu Google Forms debe tener estas preguntas (el sistema reconoce variaciones):
+
+| Campo | Ejemplos de nombres aceptados |
+|-------|-------------------------------|
+| Nombre | "Nombre completo", "Nombre del propietario" |
+| Correo | "Correo electrónico", "Email" |
+| Cédula | "Cédula", "Documento", "CC" |
+| Torre | "Torre" |
+| Apartamento | "Apartamento", "Apto" |
+| Cantidad de carros | "Cantidad de carros", "Carros" |
+| Cantidad de motos | "Cantidad de motos", "Motos" |
+| Placa carro | "Placa del carro", "Placa vehículo" |
+| Placa moto | "Placa de la moto" |
+
+### 📝 Ejemplo de CSV válido
+
+```csv
+Nombre completo,Correo electrónico,Cédula,Torre,Apartamento,Cantidad de carros,Cantidad de motos,Placa carro,Placa moto
+Juan Pérez,juan@email.com,1082123456,A,101,1,0,ABC123,
+María García,maria@email.com,1082234567,A,102,2,1,XYZ789,MOT45D
+```
+
+Ver archivo: `ejemplo-google-forms.csv`
+
+### 🔧 Pasos para importar
+
+1. **Exportar desde Google Forms:**
+   - Abre tu formulario → Respuestas
+   - Click en el icono de Google Sheets
+   - En la hoja: Archivo > Descargar > Valores separados por comas (.csv)
+
+2. **Importar en el sistema:**
+   - Inicia sesión como Admin
+   - En la sección lateral, baja hasta "📤 Importar desde Google Forms"
+   - Selecciona tu archivo CSV
+   - Click en "⬆️ Importar datos"
+
+3. **Resultado:**
+   - ✅ Inserta propietarios nuevos (cédula no existe)
+   - ✅ Actualiza propietarios existentes (cédula ya existe)
+   - ✅ Muestra resumen detallado
+   - ✅ Registra en historial
+
+**Límites:** Archivos hasta 5MB
+
+## �📊 API Endpoints
 
 ### Autenticación
 - `POST /api/auth/login` - Login
@@ -181,6 +233,9 @@ Vigilante:
 - `POST /api/propietarios` - Crear (Admin)
 - `PUT /api/propietarios/:id` - Actualizar (Admin)
 - `DELETE /api/propietarios/:id` - Eliminar (Admin)
+
+### Importación
+- `POST /api/importar-csv` - Importar CSV desde Google Forms (Admin)
 
 ### Reportes
 - `GET /api/export/propietarios.csv` - Exportar propietarios (Admin)

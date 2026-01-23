@@ -116,6 +116,21 @@
     <section class="card list-section">
       <h2>📋 Listado de propietarios</h2>
       
+      <!-- IMPORTACIÓN CSV -->
+      <div data-admin-only style="margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid var(--border);">
+        <h3 class="group-title">📤 Importar desde Google Forms</h3>
+        <p class="muted" style="margin-bottom: 16px; font-size: 13px;">Carga datos masivos desde un archivo CSV exportado de Google Forms</p>
+        
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+          <input type="file" id="csvFile" accept=".csv" style="display:none" />
+          <button class="btn ghost" type="button" onclick="document.getElementById('csvFile').click()" style="flex: 1; min-width: 200px;">📁 Seleccionar CSV</button>
+          <button class="btn" type="button" id="btnImportarCSV" disabled style="flex: 1; min-width: 200px;">⬆️ Importar datos</button>
+        </div>
+        
+        <div id="fileName" class="muted" style="text-align: center; min-height: 20px; font-size: 12px; margin-top: 8px;"></div>
+        <div class="msg" id="csvMsg" style="margin-top: 12px;"></div>
+      </div>
+      
       <div class="toolbar">
         <p class="muted">Busca, filtra y gestiona tus registros</p>
 

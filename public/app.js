@@ -457,6 +457,104 @@ $("formCambiarUsername").addEventListener("submit", async (e) => {
   }
 });
 
+// ===== IMPORTACIÓN CSV =====
+const csvFileInput = $("csvFile");
+const btnImportarCSV = $("btnImportarCSV");
+const csvMsg = $("csvMsg");
+const fileNameDisplay = $("fileName");
+
+// Detectar cuando se selecciona un archivo
+csvFileInput?.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  
+  if (file) {
+    fileNameDisplay.textContent = `📄 ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+    fileNameDisplay.style.color = "var(--accent)";
+    btnImportarCSV.disabled = false;
+    csvMsg.textContent = "";
+    csvMsg.className = "msg";
+  } else {
+    fileNameDisplay.textContent = "";
+    btnImportarCSV.disabled = true;
+  }
+});
+
+// Importar CSV
+btnImportarCSV?.addEventListener("click", async () => {
+  const file = csvFileInput.files[0];
+  
+  if (!file) {
+    showToast("Por favor selecciona un archivo CSV", "err");
+    return;
+  }
+
+  if (!file.name.endsWith('.csv')) {
+    showToast("El archivo debe ser formato CSV", "err");
+    return;
+  }
+
+  try {
+    btnImportarCSV.disabled = true;
+    btnImportarCSV.textContent = "⏳ Importando...";
+    csvMsg.textContent = "";
+    csvMsg.className = "msg";
+
+    const formData = new FormData();
+    formData.append('csvFile', file);
+
+    const res = await fetch('/api/importar-csv', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      csvMsg.textContent = data.error || "Error al importar CSV";
+      csvMsg.className = "msg err";
+      showToast(data.error || "Error al importar CSV", "err");
+      return;
+    }
+
+    // Mostrar resumen
+    let mensaje = `✅ Importación exitosa:\n`;
+    mensaje += `• ${data.insertados} propietarios nuevos insertados\n`;
+    mensaje += `• ${data.actualizados} propietarios actualizados\n`;
+    mensaje += `• Total procesados: ${data.total}`;
+
+    if (data.erroresValidacion && data.erroresValidacion.length > 0) {
+      mensaje += `\n\n⚠️ ${data.erroresValidacion.length} filas con errores de validación`;
+    }
+
+    if (data.erroresDB && data.erroresDB.length > 0) {
+      mensaje += `\n⚠️ ${data.erroresDB.length} errores en la base de datos`;
+    }
+
+    csvMsg.textContent = mensaje;
+    csvMsg.className = "msg ok";
+    csvMsg.style.whiteSpace = "pre-line";
+
+    showToast(`Importados ${data.insertados}, actualizados ${data.actualizados} ✅`, "ok");
+
+    // Limpiar formulario
+    csvFileInput.value = "";
+    fileNameDisplay.textContent = "";
+    btnImportarCSV.disabled = true;
+
+    // Recargar lista
+    await loadList();
+
+  } catch (err) {
+    console.error("Error importando:", err);
+    csvMsg.textContent = "Error de conexión al importar";
+    csvMsg.className = "msg err";
+    showToast("Error de conexión al importar", "err");
+  } finally {
+    btnImportarCSV.disabled = false;
+    btnImportarCSV.textContent = "⬆️ Importar datos";
+  }
+});
+
 // Inicializar: verificar auth y cargar datos
 checkAuth();
 loadList();

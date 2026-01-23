@@ -10,6 +10,7 @@ import { createBackup } from "./src/utils/backup.js";
 import authRoutes from "./src/routes/auth.routes.js";
 import propietariosRoutes from "./src/routes/propietarios.routes.js";
 import apiRoutes from "./src/routes/api.routes.js";
+import importRoutes from "./src/routes/import.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -83,6 +84,7 @@ async function createDefaultUsers() {
 app.use("/api/auth", authRoutes);
 app.use("/api/propietarios", propietariosRoutes);
 app.use("/api", apiRoutes);
+app.use("/api", importRoutes);
 
 // Ruta de diagnóstico
 app.get("/diagnose", async (req, res) => {
