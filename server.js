@@ -10,7 +10,6 @@ import propietariosRoutes from "./src/routes/propietarios.routes.js";
 import apiRoutes from "./src/routes/api.routes.js";
 import importRoutes from "./src/routes/import.routes.js";
 import usuariosRoutes from "./src/routes/usuarios.routes.js";
-import migrateRoutes from "./src/routes/migrate.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,28 +31,23 @@ async function createDefaultUsers() {
   try {
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    const count = await new Promise((resolve, reject) => {
-      db.get("SELECT COUNT(*) as total FROM usuarios", [], (err, row) => {
+    // Verificar si ya existen los usuarios por defecto
+    const existingUsers = await new Promise((resolve, reject) => {
+      db.all("SELECT usuario FROM usuarios WHERE usuario IN ('admin', 'vigilante')", [], (err, rows) => {
         if (err) reject(err);
-        else resolve(row?.total || 0);
+        else resolve(rows || []);
       });
     });
     
-    if (count >= 2) {
-      console.log(`✅ Usuarios existentes en BD: ${count}`);
+    const hasAdmin = existingUsers.some(u => u.usuario === 'admin');
+    const hasVigilante = existingUsers.some(u => u.usuario === 'vigilante');
+    
+    if (hasAdmin && hasVigilante) {
+      console.log(`✅ Usuarios por defecto ya existen en BD`);
       return;
     }
     
-    console.log("🔧 Inicializando usuarios por defecto...");
-    
-    if (count > 0 && count < 2) {
-      await new Promise((resolve, reject) => {
-        db.run("DELETE FROM usuarios", [], (err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-      });
-    }
+    console.log("🔧 Creando usuarios por defecto faltantes...");
     
     // Usar contraseñas de las variables de entorno
     const adminPass = process.env.DEFAULT_ADMIN_PASS;
@@ -67,34 +61,38 @@ async function createDefaultUsers() {
     
     // Importar bcrypt directamente aquí
     const bcrypt = await import("bcryptjs");
-    const adminHash = await bcrypt.default.hash(adminPass, 10);
-    const vigilanteHash = await bcrypt.default.hash(vigilantePass, 10);
     
-    // Crear admin
-    await new Promise((resolve, reject) => {
-      db.run(
-        "INSERT INTO usuarios (usuario, contrasena, rol) VALUES (?, ?, ?)",
-        ["admin", adminHash, "admin"],
-        function(err) {
-          if (err) reject(err);
-          else resolve();
-        }
-      );
-    });
-    console.log("✅ Usuario admin creado");
+    // Crear admin si no existe
+    if (!hasAdmin) {
+      const adminHash = await bcrypt.default.hash(adminPass, 10);
+      await new Promise((resolve, reject) => {
+        db.run(
+          "INSERT INTO usuarios (usuario, contrasena, rol) VALUES (?, ?, ?)",
+          ["admin", adminHash, "admin"],
+          function(err) {
+            if (err) reject(err);
+            else resolve();
+          }
+        );
+      });
+      console.log("✅ Usuario admin creado");
+    }
     
-    // Crear vigilante
-    await new Promise((resolve, reject) => {
-      db.run(
-        "INSERT INTO usuarios (usuario, contrasena, rol) VALUES (?, ?, ?)",
-        ["vigilante", vigilanteHash, "vigilante"],
-        function(err) {
-          if (err) reject(err);
-          else resolve();
-        }
-      );
-    });
-    console.log("✅ Usuario vigilante creado");
+    // Crear vigilante si no existe
+    if (!hasVigilante) {
+      const vigilanteHash = await bcrypt.default.hash(vigilantePass, 10);
+      await new Promise((resolve, reject) => {
+        db.run(
+          "INSERT INTO usuarios (usuario, contrasena, rol) VALUES (?, ?, ?)",
+          ["vigilante", vigilanteHash, "vigilante"],
+          function(err) {
+            if (err) reject(err);
+            else resolve();
+          }
+        );
+      });
+      console.log("✅ Usuario vigilante creado");
+    }
     
     console.log("✅ Usuarios iniciales listos");
   } catch (err) {
@@ -108,7 +106,6 @@ app.use("/api/propietarios", propietariosRoutes);
 app.use("/api", apiRoutes);
 app.use("/api", importRoutes);
 app.use("/api/usuarios", usuariosRoutes);
-app.use("/api/migrate", migrateRoutes);
 
 // Iniciar servidor
 app.listen(PORT, async () => {
