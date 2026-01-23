@@ -27,10 +27,17 @@ if (usePostgres) {
   
   dbType = "postgres";
   
+  // Función para convertir placeholders SQLite (?) a PostgreSQL ($1, $2, etc)
+  const convertPlaceholders = (sql) => {
+    let index = 0;
+    return sql.replace(/\?/g, () => `$${++index}`);
+  };
+  
   // Wrapper para compatibilidad con SQLite API
   db = {
     run: (sql, params = [], callback = () => {}) => {
-      pool.query(sql, params)
+      const pgSql = convertPlaceholders(sql);
+      pool.query(pgSql, params)
         .then(result => {
           // Simular el contexto de SQLite con lastID
           const context = {
@@ -41,12 +48,14 @@ if (usePostgres) {
         .catch(err => callback(err));
     },
     get: (sql, params = [], callback) => {
-      pool.query(sql, params)
+      const pgSql = convertPlaceholders(sql);
+      pool.query(pgSql, params)
         .then(result => callback(null, result.rows[0]))
         .catch(err => callback(err));
     },
     all: (sql, params = [], callback) => {
-      pool.query(sql, params)
+      const pgSql = convertPlaceholders(sql);
+      pool.query(pgSql, params)
         .then(result => callback(null, result.rows))
         .catch(err => callback(err));
     },
