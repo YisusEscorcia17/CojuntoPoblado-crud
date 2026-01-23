@@ -33,10 +33,25 @@ if (usePostgres) {
     return sql.replace(/\?/g, () => `$${++index}`);
   };
   
+  // Función para convertir nombres de columnas camelCase a lowercase para PostgreSQL
+  const convertColumnNames = (sql) => {
+    // Convertir nombres de columnas comunes en INSERT y SELECT
+    return sql
+      .replace(/nombrePropietario/g, 'nombrepropietario')
+      .replace(/cantidadCarros/g, 'cantidadcarros')
+      .replace(/cantidadMotos/g, 'cantidadmotos')
+      .replace(/placaCarro/g, 'placacarro')
+      .replace(/placaMoto/g, 'placamoto')
+      .replace(/deudaMoroso/g, 'deudamoroso')
+      .replace(/idPropietario/g, 'idpropietario')
+      .replace(/createdAt/g, 'createdat');
+  };
+  
   // Wrapper para compatibilidad con SQLite API
   db = {
     run: (sql, params = [], callback = () => {}) => {
       let pgSql = convertPlaceholders(sql);
+      pgSql = convertColumnNames(pgSql);
       
       // Si es INSERT y no tiene RETURNING, agregarlo automáticamente
       if (pgSql.trim().toUpperCase().startsWith('INSERT') && 
@@ -56,15 +71,42 @@ if (usePostgres) {
         .catch(err => callback(err));
     },
     get: (sql, params = [], callback) => {
-      const pgSql = convertPlaceholders(sql);
+      let pgSql = convertPlaceholders(sql);
+      pgSql = convertColumnNames(pgSql);
       pool.query(pgSql, params)
-        .then(result => callback(null, result.rows[0]))
+        .then(result => {
+          // Convertir nombres de columnas de vuelta a camelCase
+          const row = result.rows[0];
+          if (row) {
+            const converted = {};
+            for (const [key, value] of Object.entries(row)) {
+              // Convertir a camelCase
+              const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+              converted[camelKey] = value;
+            }
+            callback(null, converted);
+          } else {
+            callback(null, row);
+          }
+        })
         .catch(err => callback(err));
     },
     all: (sql, params = [], callback) => {
-      const pgSql = convertPlaceholders(sql);
+      let pgSql = convertPlaceholders(sql);
+      pgSql = convertColumnNames(pgSql);
       pool.query(pgSql, params)
-        .then(result => callback(null, result.rows))
+        .then(result => {
+          // Convertir nombres de columnas de vuelta a camelCase para cada fila
+          const rows = result.rows.map(row => {
+            const converted = {};
+            for (const [key, value] of Object.entries(row)) {
+              const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+              converted[camelKey] = value;
+            }
+            return converted;
+          });
+          callback(null, rows);
+        })
         .catch(err => callback(err));
     },
     serialize: (fn) => fn(),
@@ -86,22 +128,22 @@ export { db, dbType };
 export function initDb() {
   db.serialize(() => {
     if (dbType === "postgres") {
-      // Crear tablas para PostgreSQL
+      // Crear tablas para PostgreSQL (sin comillas para compatibilidad)
       db.run(`
         CREATE TABLE IF NOT EXISTS propietarios (
           id SERIAL PRIMARY KEY,
-          "nombrePropietario" TEXT NOT NULL,
+          nombrepropietario TEXT NOT NULL,
           correo TEXT NOT NULL,
           cedula TEXT NOT NULL UNIQUE,
           torre TEXT NOT NULL,
           apartamento TEXT NOT NULL,
-          "cantidadCarros" INTEGER DEFAULT 0,
-          "cantidadMotos" INTEGER DEFAULT 0,
-          "placaCarro" TEXT,
-          "placaMoto" TEXT,
+          cantidadcarros INTEGER DEFAULT 0,
+          cantidadmotos INTEGER DEFAULT 0,
+          placacarro TEXT,
+          placamoto TEXT,
           moroso INTEGER DEFAULT 0,
-          "deudaMoroso" DECIMAL(10,2) DEFAULT 0,
-          "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          deudamoroso DECIMAL(10,2) DEFAULT 0,
+          createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
 
@@ -110,7 +152,7 @@ export function initDb() {
           id SERIAL PRIMARY KEY,
           accion TEXT NOT NULL,
           cedula TEXT,
-          "idPropietario" INTEGER,
+          idpropietario INTEGER,
           datos_antes TEXT,
           datos_despues TEXT,
           fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -123,7 +165,7 @@ export function initDb() {
           usuario TEXT NOT NULL UNIQUE,
           contrasena TEXT NOT NULL,
           rol TEXT DEFAULT 'vigilante',
-          "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
     } else {
