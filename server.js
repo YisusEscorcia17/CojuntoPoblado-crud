@@ -76,7 +76,7 @@ async function createDefaultUsers() {
         }
       );
     });
-    console.log("✅ Usuario admin creado - Contraseña:", adminPass);
+    console.log("✅ Usuario admin creado");
     
     // Crear vigilante
     await new Promise((resolve, reject) => {
@@ -89,7 +89,7 @@ async function createDefaultUsers() {
         }
       );
     });
-    console.log("✅ Usuario vigilante creado - Contraseña:", vigilantePass);
+    console.log("✅ Usuario vigilante creado");
     
     // Guardar credenciales en archivo temporal (solo desarrollo)
     if (NODE_ENV !== "production") {
