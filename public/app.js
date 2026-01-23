@@ -142,13 +142,57 @@ function toggleDeuda() {
 function readForm() {
   const placaCarro = $("placaCarro").value.trim().toUpperCase();
   const placaMoto = $("placaMoto").value.trim().toUpperCase();
+  
+  // Validar campos obligatorios
+  const nombrePropietario = $("nombrePropietario").value.trim();
+  const correo = $("correo").value.trim();
+  const cedula = $("cedula").value.trim();
+  const torre = $("torre").value.trim();
+  const apartamento = $("apartamento").value.trim();
+  
+  if (!nombrePropietario) {
+    showToast("El nombre del propietario es obligatorio", "err");
+    $("nombrePropietario").focus();
+    return null;
+  }
+  
+  if (!correo) {
+    showToast("El correo electrónico es obligatorio", "err");
+    $("correo").focus();
+    return null;
+  }
+  
+  // Validar formato de correo
+  if (!correo.includes("@") || !correo.includes(".")) {
+    showToast("El correo debe tener un formato válido (ejemplo@dominio.com)", "err");
+    $("correo").focus();
+    return null;
+  }
+  
+  if (!cedula) {
+    showToast("La cédula es obligatoria", "err");
+    $("cedula").focus();
+    return null;
+  }
+  
+  if (!torre) {
+    showToast("La torre es obligatoria", "err");
+    $("torre").focus();
+    return null;
+  }
+  
+  if (!apartamento) {
+    showToast("El apartamento es obligatorio", "err");
+    $("apartamento").focus();
+    return null;
+  }
 
   return {
-    nombrePropietario: $("nombrePropietario").value.trim(),
-    correo: $("correo").value.trim(),
-    cedula: $("cedula").value.trim(),
-    torre: $("torre").value.trim(),
-    apartamento: $("apartamento").value.trim(),
+    nombrePropietario,
+    correo,
+    cedula,
+    torre,
+    apartamento,
     cantidadCarros: Number.parseInt($("cantidadCarros").value || "0", 10),
     cantidadMotos: Number.parseInt($("cantidadMotos").value || "0", 10),
     placaCarro: placaCarro || null,
@@ -311,10 +355,10 @@ form.addEventListener("submit", async (e) => {
   setMsg("");
 
   const payload = readForm();
-
-  // mini validación frontend
-  if (!payload.nombrePropietario || !payload.correo || !payload.cedula || !payload.torre || !payload.apartamento) {
-    return setMsg("Te faltan campos obligatorios 😅", "err");
+  
+  // Si readForm() devuelve null, significa que hubo un error de validación
+  if (!payload) {
+    return;
   }
 
   // Validación moroso/deuda

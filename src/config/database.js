@@ -47,6 +47,27 @@ if (usePostgres) {
       .replace(/createdAt/g, 'createdat');
   };
   
+  // Función para convertir una fila de PostgreSQL (lowercase) a camelCase
+  const convertRowToCamelCase = (row) => {
+    const mapping = {
+      'nombrepropietario': 'nombrePropietario',
+      'cantidadcarros': 'cantidadCarros',
+      'cantidadmotos': 'cantidadMotos',
+      'placacarro': 'placaCarro',
+      'placamoto': 'placaMoto',
+      'deudamoroso': 'deudaMoroso',
+      'idpropietario': 'idPropietario',
+      'createdat': 'createdAt'
+    };
+    
+    const converted = {};
+    for (const [key, value] of Object.entries(row)) {
+      const camelKey = mapping[key] || key;
+      converted[camelKey] = value;
+    }
+    return converted;
+  };
+  
   // Wrapper para compatibilidad con SQLite API
   db = {
     run: (sql, params = [], callback = () => {}) => {
@@ -78,12 +99,7 @@ if (usePostgres) {
           // Convertir nombres de columnas de vuelta a camelCase
           const row = result.rows[0];
           if (row) {
-            const converted = {};
-            for (const [key, value] of Object.entries(row)) {
-              // Convertir a camelCase
-              const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
-              converted[camelKey] = value;
-            }
+            const converted = convertRowToCamelCase(row);
             callback(null, converted);
           } else {
             callback(null, row);
@@ -97,14 +113,7 @@ if (usePostgres) {
       pool.query(pgSql, params)
         .then(result => {
           // Convertir nombres de columnas de vuelta a camelCase para cada fila
-          const rows = result.rows.map(row => {
-            const converted = {};
-            for (const [key, value] of Object.entries(row)) {
-              const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
-              converted[camelKey] = value;
-            }
-            return converted;
-          });
+          const rows = result.rows.map(row => convertRowToCamelCase(row));
           callback(null, rows);
         })
         .catch(err => callback(err));
