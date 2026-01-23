@@ -10,6 +10,7 @@ import propietariosRoutes from "./src/routes/propietarios.routes.js";
 import apiRoutes from "./src/routes/api.routes.js";
 import importRoutes from "./src/routes/import.routes.js";
 import usuariosRoutes from "./src/routes/usuarios.routes.js";
+import migrateRoutes from "./src/routes/migrate.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -107,6 +108,7 @@ app.use("/api/propietarios", propietariosRoutes);
 app.use("/api", apiRoutes);
 app.use("/api", importRoutes);
 app.use("/api/usuarios", usuariosRoutes);
+app.use("/api/migrate", migrateRoutes);
 
 // Iniciar servidor
 app.listen(PORT, async () => {
