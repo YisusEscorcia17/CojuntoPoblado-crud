@@ -519,23 +519,24 @@ btnImportarCSV?.addEventListener("click", async () => {
 
     // Mostrar resumen
     let mensaje = `✅ Importación exitosa:\n`;
-    mensaje += `• ${data.insertados} propietarios nuevos insertados\n`;
+    mensaje += `• ${data.insertados} propietarios nuevos\n`;
     mensaje += `• ${data.actualizados} propietarios actualizados\n`;
     mensaje += `• Total procesados: ${data.total}`;
 
     if (data.erroresValidacion && data.erroresValidacion.length > 0) {
-      mensaje += `\n\n⚠️ ${data.erroresValidacion.length} filas con errores de validación`;
+      mensaje += `\n\n⚠️ ${data.erroresValidacion.length} filas omitidas (datos incompletos)`;
     }
 
     if (data.erroresDB && data.erroresDB.length > 0) {
-      mensaje += `\n⚠️ ${data.erroresDB.length} errores en la base de datos`;
+      mensaje += `\n\n❌ ${data.erroresDB.length} registros fallaron al guardar`;
+      console.warn("Errores de BD:", data.erroresDB);
     }
 
     csvMsg.textContent = mensaje;
     csvMsg.className = "msg ok";
     csvMsg.style.whiteSpace = "pre-line";
 
-    showToast(`Importados ${data.insertados}, actualizados ${data.actualizados} ✅`, "ok");
+    showToast(`✅ ${data.insertados} insertados, ${data.actualizados} actualizados`, "ok");
 
     // Limpiar formulario
     csvFileInput.value = "";
