@@ -1,13 +1,16 @@
 import session from "express-session";
 import SqliteStore from "connect-sqlite3";
+import connectPgSimple from "connect-pg-simple";
 import path from "path";
 import { fileURLToPath } from "url";
+import pg from "pg";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const Store = SqliteStore(session);
 const NODE_ENV = process.env.NODE_ENV || "development";
+const DATABASE_URL = process.env.DATABASE_URL;
+const usePostgres = NODE_ENV === "production" && DATABASE_URL;
 
 // Generar secret seguro si no está definido (solo desarrollo)
 const getSessionSecret = () => {
@@ -25,20 +28,48 @@ const getSessionSecret = () => {
 };
 
 export function configureSession() {
-  return session({
-    store: new Store({
+  let storeConfig;
+  
+  if (usePostgres) {
+    // PostgreSQL session store para producción
+    const PgSession = connectPgSimple(session);
+    const pool = new pg.Pool({
+      connectionString: DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false
+      }
+    });
+    
+    storeConfig = new PgSession({
+      pool: pool,
+      tableName: 'sessions',
+      createTableIfMissing: true
+    });
+    
+    console.log("✅ Usando PostgreSQL para sesiones");
+  } else {
+    // SQLite session store para desarrollo
+    const Store = SqliteStore(session);
+    storeConfig = new Store({
       db: "database.sqlite",
       table: "sessions",
       dir: path.join(__dirname, "../..")
-    }),
+    });
+    
+    console.log("✅ Usando SQLite para sesiones");
+  }
+  
+  return session({
+    store: storeConfig,
     secret: getSessionSecret(),
     resave: false,
     saveUninitialized: false,
     cookie: { 
-      secure: NODE_ENV === "production",
+      secure: false, // Render maneja SSL en el proxy
       httpOnly: true,
       sameSite: "lax",
       maxAge: 24 * 60 * 60 * 1000
-    }
+    },
+    proxy: NODE_ENV === "production" // Confiar en el proxy de Render
   });
 }
