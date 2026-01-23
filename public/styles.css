@@ -280,13 +280,18 @@ input:disabled{opacity:0.5;cursor:not-allowed}
   border-radius:12px;
   border:1px solid var(--border);
   background:rgba(11,18,32,.5);
-  box-shadow:0 4px 12px rgba(0,0,0,.3)
+  box-shadow:0 4px 12px rgba(0,0,0,.3);
+  -webkit-overflow-scrolling:touch
 }
 
 table{
   width:100%;
   border-collapse:collapse;
   min-width:1000px
+}
+
+@media(max-width:768px){
+  table{min-width:100%}
 }
 
 thead{
@@ -305,14 +310,19 @@ th{
   letter-spacing:0.6px;
   padding:18px 16px;
   border-bottom:2px solid var(--accent);
-  background:inherit
+  background:inherit;
+  white-space:nowrap
 }
 
 td{
-  padding:16px;
+  padding:16px 14px;
   border-bottom:1px solid rgba(33,52,86,.5);
   font-size:14px;
   vertical-align:middle
+}
+
+@media(max-width:768px){
+  th,td{padding:12px 10px;font-size:13px}
 }
 
 tbody tr{
@@ -327,6 +337,16 @@ tbody tr:hover{
 
 tbody tr:nth-child(even){
   background:rgba(11,18,32,.3)
+}
+
+@media(max-width:768px){
+  .tableWrap{
+    border-radius:8px;
+    overflow-x:auto;
+    max-width:100vw;
+    margin:0 -10px;
+    padding:0 10px
+  }
 }
 
 .badge{
@@ -619,6 +639,41 @@ a.btn.ghost{line-height:32px}
 
 .modal-body .form-group:last-of-type{
   margin-bottom:0
+}
+
+/* Mejoras adicionales para celdas de tabla */
+.cell-wrap{
+  max-width:200px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+
+@media(max-width:1200px){
+  .cell-wrap{max-width:150px}
+}
+
+@media(max-width:768px){
+  .cell-wrap{
+    max-width:none;
+    white-space:normal;
+    word-break:break-word
+  }
+}
+
+/* Scrollbar personalizado para tabla */
+.tableWrap::-webkit-scrollbar{
+  height:8px;
+  background:rgba(11,18,32,.8)
+}
+
+.tableWrap::-webkit-scrollbar-thumb{
+  background:var(--accent);
+  border-radius:4px
+}
+
+.tableWrap::-webkit-scrollbar-thumb:hover{
+  background:rgba(78,161,255,.8)
 }
 
 /* RESPONSIVIDAD MODAL */

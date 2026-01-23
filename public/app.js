@@ -224,17 +224,17 @@ async function loadList() {
 
   tbody.innerHTML = rows.map(r => `
     <tr>
-      <td>${escapeHtml(r.nombrePropietario)}</td>
-      <td>${escapeHtml(r.correo)}</td>
+      <td><span class="cell-wrap" title="${escapeHtml(r.nombrePropietario)}">${escapeHtml(r.nombrePropietario)}</span></td>
+      <td><span class="cell-wrap" title="${escapeHtml(r.correo)}">${escapeHtml(r.correo)}</span></td>
       <td>${escapeHtml(r.cedula)}</td>
       <td>${escapeHtml(r.torre)}</td>
       <td>${escapeHtml(r.apartamento)}</td>
-      <td>${r.cantidadCarros}</td>
-      <td>${r.cantidadMotos}</td>
-      <td>${escapeHtml(r.placaCarro || "")}</td>
-      <td>${escapeHtml(r.placaMoto || "")}</td>
+      <td style="text-align:center">${r.cantidadCarros}</td>
+      <td style="text-align:center">${r.cantidadMotos}</td>
+      <td>${escapeHtml(r.placaCarro || "-")}</td>
+      <td>${escapeHtml(r.placaMoto || "-")}</td>
       <td>${badgeMoroso(!!r.moroso)}</td>
-      <td>$ ${moneyCOP(r.deudaMoroso || 0)}</td>
+      <td style="white-space:nowrap">$ ${moneyCOP(r.deudaMoroso || 0)}</td>
       <td>
         <div class="actionsCell">
           ${state.isAdmin ? `
