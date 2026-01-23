@@ -34,7 +34,7 @@ async function createDefaultUsers() {
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     const count = await new Promise((resolve, reject) => {
-      db.get("SELECT COUNT(*) as total FROM usuarios", (err, row) => {
+      db.get("SELECT COUNT(*) as total FROM usuarios", [], (err, row) => {
         if (err) reject(err);
         else resolve(row?.total || 0);
       });
@@ -49,22 +49,47 @@ async function createDefaultUsers() {
     
     if (count > 0 && count < 2) {
       await new Promise((resolve, reject) => {
-        db.run("DELETE FROM usuarios", (err) => {
+        db.run("DELETE FROM usuarios", [], (err) => {
           if (err) reject(err);
           else resolve();
         });
       });
     }
     
-    // Generar credenciales seguras por defecto
-    const adminPass = process.env.DEFAULT_ADMIN_PASS || `Admin@${new Date().getFullYear()}!Secure${Math.random().toString(36).slice(-4).toUpperCase()}`;
-    const vigilantePass = process.env.DEFAULT_VIGILANTE_PASS || `Vigilante@${new Date().getFullYear()}!Secure${Math.random().toString(36).slice(-4).toUpperCase()}`;
+    // Usar contraseñas de las variables de entorno o defaults simples
+    const adminPass = process.env.DEFAULT_ADMIN_PASS || "admin123";
+    const vigilantePass = process.env.DEFAULT_VIGILANTE_PASS || "vigilante123";
     
-    await createUser("admin", adminPass, "admin");
-    console.log("✅ Usuario admin creado");
+    // Importar bcrypt directamente aquí
+    const bcrypt = await import("bcryptjs");
+    const adminHash = await bcrypt.default.hash(adminPass, 10);
+    const vigilanteHash = await bcrypt.default.hash(vigilantePass, 10);
     
-    await createUser("vigilante", vigilantePass, "vigilante");
-    console.log("✅ Usuario vigilante creado");
+    // Crear admin
+    await new Promise((resolve, reject) => {
+      db.run(
+        "INSERT INTO usuarios (usuario, contrasena, rol) VALUES (?, ?, ?)",
+        ["admin", adminHash, "admin"],
+        function(err) {
+          if (err) reject(err);
+          else resolve();
+        }
+      );
+    });
+    console.log("✅ Usuario admin creado - Contraseña:", adminPass);
+    
+    // Crear vigilante
+    await new Promise((resolve, reject) => {
+      db.run(
+        "INSERT INTO usuarios (usuario, contrasena, rol) VALUES (?, ?, ?)",
+        ["vigilante", vigilanteHash, "vigilante"],
+        function(err) {
+          if (err) reject(err);
+          else resolve();
+        }
+      );
+    });
+    console.log("✅ Usuario vigilante creado - Contraseña:", vigilantePass);
     
     // Guardar credenciales en archivo temporal (solo desarrollo)
     if (NODE_ENV !== "production") {
@@ -78,6 +103,7 @@ async function createDefaultUsers() {
     console.log("✅ Usuarios iniciales listos");
   } catch (err) {
     console.error("⚠️  Error inicializando usuarios:", err.message);
+    console.error("Stack:", err.stack);
   }
 }
 
