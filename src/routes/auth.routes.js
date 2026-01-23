@@ -1,5 +1,4 @@
 import express from "express";
-import { db } from "../config/database.js";
 import { verifyLogin, hashPassword, changePassword, changeUsername, getUserById, verifyPassword } from "../config/auth.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
 
@@ -23,51 +22,6 @@ router.post("/login", async (req, res) => {
     res.json({ ok: true, usuario: user.usuario, rol: user.rol });
   } catch (err) {
     res.status(500).json({ error: "Error en login" });
-  }
-});
-
-// Cambiar contraseña inicial (sin estar logueado - SOLO PARA ADMIN CON CONTRASEÑA INICIAL)
-router.post("/setup-password", async (req, res) => {
-  const { usuario, contrasenaActual, contrasenaNueva, confirmacion } = req.body;
-  
-  if (!usuario || !contrasenaActual || !contrasenaNueva || !confirmacion) {
-    return res.status(400).json({ ok: false, error: "Todos los campos son requeridos" });
-  }
-  
-  if (contrasenaNueva !== confirmacion) {
-    return res.status(400).json({ ok: false, error: "Las contraseñas no coinciden" });
-  }
-  
-  if (contrasenaNueva.length < 6) {
-    return res.status(400).json({ ok: false, error: "La contraseña debe tener al menos 6 caracteres" });
-  }
-  
-  try {
-    const user = await verifyLogin(usuario, contrasenaActual);
-    if (!user) {
-      return res.status(401).json({ ok: false, error: "Usuario o contraseña incorrectos" });
-    }
-    
-    if (user.rol !== "admin") {
-      return res.status(403).json({ ok: false, error: "Solo el admin puede cambiar contraseña inicial" });
-    }
-    
-    const newHash = await hashPassword(contrasenaNueva);
-    
-    await new Promise((resolve, reject) => {
-      db.run(
-        "UPDATE usuarios SET contrasena = ? WHERE usuario = ?",
-        [newHash, usuario],
-        function(err) {
-          if (err) reject(err);
-          else resolve();
-        }
-      );
-    });
-    
-    return res.json({ ok: true, mensaje: "Contraseña cambiada exitosamente" });
-  } catch (err) {
-    return res.status(500).json({ ok: false, error: "Error al cambiar contraseña" });
   }
 });
 

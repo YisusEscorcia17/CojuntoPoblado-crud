@@ -36,12 +36,20 @@ if (usePostgres) {
   // Wrapper para compatibilidad con SQLite API
   db = {
     run: (sql, params = [], callback = () => {}) => {
-      const pgSql = convertPlaceholders(sql);
+      let pgSql = convertPlaceholders(sql);
+      
+      // Si es INSERT y no tiene RETURNING, agregarlo automáticamente
+      if (pgSql.trim().toUpperCase().startsWith('INSERT') && 
+          !pgSql.toUpperCase().includes('RETURNING')) {
+        pgSql = pgSql.trim().replace(/;?\s*$/, '') + ' RETURNING id';
+      }
+      
       pool.query(pgSql, params)
         .then(result => {
           // Simular el contexto de SQLite con lastID
           const context = {
-            lastID: result.rows?.[0]?.id || result.rowCount || null
+            lastID: result.rows?.[0]?.id || null,
+            changes: result.rowCount || 0
           };
           callback.call(context, null, result);
         })

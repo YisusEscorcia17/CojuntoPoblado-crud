@@ -3,8 +3,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { configureSession } from "./src/config/session.js";
 import { db, initDb } from "./src/config/database.js";
-import { createUser } from "./src/config/auth.js";
-import { createBackup } from "./src/utils/backup.js";
 
 // Rutas
 import authRoutes from "./src/routes/auth.routes.js";
@@ -56,9 +54,15 @@ async function createDefaultUsers() {
       });
     }
     
-    // Usar contraseñas de las variables de entorno o defaults simples
-    const adminPass = process.env.DEFAULT_ADMIN_PASS || "admin123";
-    const vigilantePass = process.env.DEFAULT_VIGILANTE_PASS || "vigilante123";
+    // Usar contraseñas de las variables de entorno
+    const adminPass = process.env.DEFAULT_ADMIN_PASS;
+    const vigilantePass = process.env.DEFAULT_VIGILANTE_PASS;
+    
+    if (!adminPass || !vigilantePass) {
+      console.warn("⚠️  DEFAULT_ADMIN_PASS y DEFAULT_VIGILANTE_PASS no definidos");
+      console.warn("⚠️  Configura estas variables de entorno en Render");
+      return;
+    }
     
     // Importar bcrypt directamente aquí
     const bcrypt = await import("bcryptjs");
@@ -91,19 +95,9 @@ async function createDefaultUsers() {
     });
     console.log("✅ Usuario vigilante creado");
     
-    // Guardar credenciales en archivo temporal (solo desarrollo)
-    if (NODE_ENV !== "production") {
-      const fs = await import("fs");
-      const credencialesPath = path.join(__dirname, "CREDENCIALES_INICIALES.md");
-      const contenido = `# Credenciales Iniciales\n\n⚠️ **CAMBIAR INMEDIATAMENTE**\n\n## Admin\n- Usuario: admin\n- Contraseña: ${adminPass}\n\n## Vigilante\n- Usuario: vigilante\n- Contraseña: ${vigilantePass}\n\n---\n*Este archivo se genera automáticamente. Cambiar las contraseñas y eliminar este archivo.*\n`;
-      fs.writeFileSync(credencialesPath, contenido);
-      console.log("📄 Credenciales guardadas en CREDENCIALES_INICIALES.md");
-    }
-    
     console.log("✅ Usuarios iniciales listos");
   } catch (err) {
     console.error("⚠️  Error inicializando usuarios:", err.message);
-    console.error("Stack:", err.stack);
   }
 }
 
@@ -113,42 +107,6 @@ app.use("/api/propietarios", propietariosRoutes);
 app.use("/api", apiRoutes);
 app.use("/api", importRoutes);
 app.use("/api/usuarios", usuariosRoutes);
-
-// Ruta de diagnóstico
-app.get("/diagnose", async (req, res) => {
-  const fs = await import("fs");
-  const dbPath = "./database.sqlite";
-  const exists = fs.existsSync(dbPath);
-  const size = exists ? fs.statSync(dbPath).size : 0;
-  
-  let userCount = "ERROR";
-  let allUsers = [];
-  
-  db.all("SELECT id, usuario, rol, LENGTH(contrasena) as passwdLen FROM usuarios", (err, rows) => {
-    if (err) {
-      userCount = "ERROR: " + err.message;
-    } else {
-      userCount = rows ? rows.length : 0;
-      allUsers = rows || [];
-    }
-    
-    res.json({
-      dbExists: exists,
-      dbSize: size + " bytes",
-      dbPath: dbPath,
-      userCount: userCount,
-      users: allUsers,
-      environment: NODE_ENV,
-      port: PORT,
-      timestamp: new Date().toISOString()
-    });
-  });
-});
-
-// Backup automático cada 12 horas
-setInterval(() => {
-  createBackup().catch(() => {});
-}, 12 * 60 * 60 * 1000);
 
 // Iniciar servidor
 app.listen(PORT, async () => {
