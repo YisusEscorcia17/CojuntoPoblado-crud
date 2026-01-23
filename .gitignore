@@ -15,3 +15,5 @@ build/
 CREDENCIALES_INICIALES.md
 .session
 sessions.db
+node_modules
+.node_modules

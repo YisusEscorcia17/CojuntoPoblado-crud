@@ -2,9 +2,9 @@
 
 ## 🔐 SEGURIDAD - LEER PRIMERO
 
-**⚠️ CRÍTICO:** Después de desplegar en Render, DEBE cambiar las credenciales iniciales INMEDIATAMENTE.
+**⚠️ CRÍTICO:** Después de desplegar, DEBE cambiar las credenciales iniciales INMEDIATAMENTE.
 
-Las credenciales iniciales serán proporcionadas por el administrador del sistema. **NO están publicadas aquí por razones de seguridad.**
+Las credenciales iniciales se generan automáticamente al primer inicio y se guardan en `CREDENCIALES_INICIALES.md` (solo en desarrollo). En producción, revisar logs del servidor.
 
 ---
 
@@ -14,8 +14,8 @@ Las credenciales iniciales serán proporcionadas por el administrador del sistem
 
 **La forma más fácil:**
 
-1. Accede a: https://cojuntoelpobladosm.onrender.com/login.html
-2. Inicia sesión con las credenciales proporcionadas por el administrador
+1. Accede a tu URL de producción en `/login.html`
+2. Inicia sesión con las credenciales iniciales (ver logs del servidor o CREDENCIALES_INICIALES.md)
 3. Haz clic en **"⚙️ Credenciales"** (arriba a la derecha)
 4. En la pestaña **"🔑 Contraseña"** cambias la contraseña
 5. En la pestaña **"👤 Usuario"** cambias el nombre de usuario
@@ -29,72 +29,34 @@ Las credenciales iniciales serán proporcionadas por el administrador del sistem
 
 ---
 
-### ✅ Opción 2: Crear Nuevo Usuario en Local (Para múltiples usuarios)
+### ✅ Opción 2: Gestionar Usuarios por CLI
 
-Si necesitas crear vigilantes o más admins, hazlo en tu PC:
+Si necesitas crear vigilantes o más admins:
 
 ```bash
 # En la carpeta del proyecto
-npm run agregar-usuario
+npm run users
 ```
 
-Responde las preguntas:
-```
-👤 Nombre de usuario: ej-vigilante-juan
-🔐 Contraseña (mínimo 6 caracteres): [ingresa contraseña fuerte]
-🔐 Confirmar contraseña: [confirma contraseña]
-👥 Rol (admin/vigilante): vigilante
-```
-
-Luego sube a Render:
-```bash
-git add -A
-git commit -m "Agregado usuario vigilante-juan"
-git push
-```
-
-Espera 2-3 minutos para que Render redepliegue. Listo ✅
+Menú interactivo con opciones:
+- Listar todos los usuarios
+- Crear nuevo usuario (admin o vigilante)
+- Eliminar usuario
 
 ---
 
 ## 📊 Gestión de Usuarios
 
-### Ver todos los usuarios existentes
-```bash
-npm run listar-usuarios
-```
-
-Salida (ejemplo):
-```
-ID: 1 | Usuario: admin-conjunto | Rol: Admin
-ID: 2 | Usuario: vigilante-juan | Rol: Vigilante
-ID: 3 | Usuario: vigilante-maria | Rol: Vigilante
-```
-
-### Crear nuevo usuario
-```bash
-npm run agregar-usuario
-```
-
----
-
-## 🔒 Estructura de Usuarios Recomendada para Producción
-
-Crea una estructura como esta (USAR CONTRASEÑAS FUERTES):
+### Estructura Recomendada
 
 ### **1. Admin Principal** (Acceso Total)
 - Nombre sugerido: `admin-conjunto`
-- Contraseña: **[Usar contraseña fuerte personal]**
+- Contraseña: **[Usar contraseña fuerte única]**
 - Rol: `admin`
 
-### **2. Vigilante - Turno A** (Solo Lectura)
-- Nombre sugerido: `vigilante-turno-a`
-- Contraseña: **[Usar contraseña fuerte personal]**
-- Rol: `vigilante`
-
-### **3. Vigilante - Turno B** (Solo Lectura)
-- Nombre sugerido: `vigilante-turno-b`
-- Contraseña: **[Usar contraseña fuerte personal]**
+### **2. Vigilantes** (Solo Lectura)
+- Nombres sugeridos: `vigilante-turnoA`, `vigilante-turnoB`
+- Contraseña: **[Usar contraseñas fuertes únicas]**
 - Rol: `vigilante`
 
 ---

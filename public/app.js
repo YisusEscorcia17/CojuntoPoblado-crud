@@ -66,12 +66,52 @@ async function logout() {
 }
 
 const form = $("form");
-const msg = $("msg");
 const tbody = $("tbody");
 
+// Sistema de notificaciones toast
+function showToast(text, type = "info") {
+  if (!text) return;
+  
+  const container = document.getElementById("toastContainer");
+  if (!container) return;
+  
+  // Crear el toast
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  
+  // Icono según el tipo
+  const icons = {
+    ok: "✅",
+    err: "❌",
+    info: "ℹ️",
+    warning: "⚠️"
+  };
+  
+  const icon = icons[type] || icons.info;
+  
+  toast.innerHTML = `
+    <span class="toast-icon">${icon}</span>
+    <span class="toast-text">${text}</span>
+    <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+  `;
+  
+  // Agregar al contenedor
+  container.appendChild(toast);
+  
+  // Animar entrada
+  setTimeout(() => toast.classList.add("show"), 10);
+  
+  // Auto-remover después de 5 segundos
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 300);
+  }, 5000);
+}
+
+// Alias para setMsg (por compatibilidad)
 function setMsg(text, type = "") {
-  msg.textContent = text || "";
-  msg.className = "msg " + (type || "");
+  if (!text) return;
+  showToast(text, type || "info");
 }
 
 function moneyCOP(value) {
@@ -315,12 +355,6 @@ function abrirModalCambiarCredenciales() {
   // Limpiar formularios
   $("formCambiarPassword").reset();
   $("formCambiarUsername").reset();
-  
-  // Limpiar mensajes
-  document.getElementById("msgPassword").textContent = "";
-  document.getElementById("msgPassword").className = "msg";
-  document.getElementById("msgUsername").textContent = "";
-  document.getElementById("msgUsername").className = "msg";
 }
 
 function cerrarModalCambiarCredenciales() {
@@ -361,9 +395,7 @@ $("formCambiarPassword").addEventListener("submit", async (e) => {
   const contrasenaNueva = $("contrasenaNueva").value;
   const confirmacion = $("confirmacion").value;
   
-  const msgEl = document.getElementById("msgPassword");
-  msgEl.textContent = "Cambiando contraseña...";
-  msgEl.className = "msg";
+  showToast("Cambiando contraseña...", "info");
   
   try {
     const res = await fetch("/api/auth/change-password", {
@@ -375,21 +407,18 @@ $("formCambiarPassword").addEventListener("submit", async (e) => {
     const data = await res.json();
     
     if (!res.ok) {
-      msgEl.textContent = data.error || "Error al cambiar contraseña";
-      msgEl.className = "msg err";
+      showToast(data.error || "Error al cambiar contraseña", "err");
       return;
     }
     
-    msgEl.textContent = "✅ Contraseña cambiada exitosamente";
-    msgEl.className = "msg ok";
+    showToast("Contraseña cambiada exitosamente ✅", "ok");
     
     setTimeout(() => {
       $("formCambiarPassword").reset();
       cerrarModalCambiarCredenciales();
     }, 1500);
   } catch (err) {
-    msgEl.textContent = "Error de conexión";
-    msgEl.className = "msg err";
+    showToast("Error de conexión", "err");
   }
 });
 
@@ -398,9 +427,8 @@ $("formCambiarUsername").addEventListener("submit", async (e) => {
   e.preventDefault();
   
   const usuarioNuevo = $("usuarioNuevo").value.trim();
-  const msgEl = document.getElementById("msgUsername");
-  msgEl.textContent = "Cambiando usuario...";
-  msgEl.className = "msg";
+  
+  showToast("Cambiando usuario...", "info");
   
   try {
     const res = await fetch("/api/auth/change-username", {
@@ -412,13 +440,11 @@ $("formCambiarUsername").addEventListener("submit", async (e) => {
     const data = await res.json();
     
     if (!res.ok) {
-      msgEl.textContent = data.error || "Error al cambiar usuario";
-      msgEl.className = "msg err";
+      showToast(data.error || "Error al cambiar usuario", "err");
       return;
     }
     
-    msgEl.textContent = "✅ Usuario cambiado exitosamente. Redirigiendo...";
-    msgEl.className = "msg ok";
+    showToast("Usuario cambiado exitosamente ✅", "ok");
     
     state.usuario = usuarioNuevo;
     
@@ -427,8 +453,7 @@ $("formCambiarUsername").addEventListener("submit", async (e) => {
       updateUIByRole();
     }, 1500);
   } catch (err) {
-    msgEl.textContent = "Error de conexión";
-    msgEl.className = "msg err";
+    showToast("Error de conexión", "err");
   }
 });
 
